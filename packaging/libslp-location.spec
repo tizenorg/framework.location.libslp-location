@@ -43,6 +43,10 @@ make %{?jobs:-j%jobs}
 
 
 %install
+rm -rf %{buildroot}
+mkdir -p %{buildroot}/usr/share/license
+cp %{_builddir}/%{name}-%{version}/LICENSE %{buildroot}/usr/share/license/%{name}
+
 %make_install
 
 
@@ -72,6 +76,7 @@ vconftool set -t int db/location/setting/NetworkEnabled "0" -g 6514 -f
 
 %files
 %manifest libslp-location.manifest
+/usr/share/license/%{name}
 %{_libdir}/lib*.so*
 
 
