@@ -113,7 +113,7 @@ location_get_distance(const LocationPosition *pos1, const LocationPosition *pos2
 
 	*distance = 0;
 
-	const double a = 6378137.0, b = 6356752.314245,  f = 1/298.257223563;
+	const double a = 6378137.0, b = 6356752.314245, f = 1/298.257223563;
 	double delta_lon = DEG2RAD(pos2->longitude-pos1->longitude);
 	double u_1 = atan((1-f) * tan(DEG2RAD(pos1->latitude)));
 	double u_2 = atan((1-f) * tan(DEG2RAD(pos2->latitude)));
@@ -121,7 +121,7 @@ location_get_distance(const LocationPosition *pos1, const LocationPosition *pos2
 	double lambdaP, iter_limit = 100.0;
 	double lambda = delta_lon;
 
-	double sin_sigma, sin_alpha, cos_sigma, sigma,  sq_cos_alpha, cos_2sigma, C;
+	double sin_sigma, sin_alpha, cos_sigma, sigma, sq_cos_alpha, cos_2sigma, C;
 	double sq_u, cal1, cal2, delta_sigma, cal_dist;
 	double sin_lambda, cos_lambda;
 
@@ -139,7 +139,7 @@ location_get_distance(const LocationPosition *pos1, const LocationPosition *pos2
 			(cos_u1*sin_u2-sin_u1*cos_u2*cos_lambda));
 
 		if (sin_sigma ==0)
-			return LOCATION_ERROR_NONE;  // co-incident points
+			return LOCATION_ERROR_NONE;	// co-incident points
 
 		cos_sigma = sin_u1*sin_u2 + cos_u1*cos_u2*cos_lambda;
 		sigma = atan2(sin_sigma, cos_sigma);

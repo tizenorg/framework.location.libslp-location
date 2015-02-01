@@ -154,6 +154,9 @@ static void SelectOpt(char* buf)
 	int iLen = 0;
 	char *str = NULL;
 	str = fgets(buf, 255, stdin);
+	if (NULL == str) {
+		g_printf("fgets return NULL. \n");
+	}
 	iLen = g_utf8_strlen(buf, -1);
 	buf[iLen-1] = '\0';
 }
@@ -164,6 +167,9 @@ static int PromptInt()
 	int ret;
 	char *str = NULL;
 	str = fgets(buf, 255, stdin);
+	if (NULL == str) {
+		g_printf("fgets return NULL. \n");
+	}
 	buf[strlen(buf)-1]='\0';
 	ret = g_ascii_strtoll(buf, NULL, 10);
 	return ret;
@@ -220,19 +226,9 @@ static void PrintProperty (LocationObject* loc)
 	gchar method_str[STR_MAX] = {0, };
 	gchar status_str[STR_MAX] = {0, };
 
-	gchar* devname = NULL;
-
 	g_object_get(loc, "method", &method, NULL);
 	GetMethod(method_str, method);
 	g_printf("method[%s] ", method_str);
-
-	if (LOCATION_METHOD_GPS == method) {
-		g_object_get(loc, "dev-name", &devname, NULL);
-		if (devname) {
-			g_printf("dev-name[%s] ", devname);
-			g_free(devname);
-		}
-	}
 
 	int ret = location_get_last_position (loc, &pos, &acc);
 	if (ret == LOCATION_ERROR_NONE) {
@@ -262,7 +258,7 @@ static void PrintProperty (LocationObject* loc)
 	if (g_sig_zoneout) g_printf("[zone-out]");
 }
 
-static void cb_service_enabled (GObject *self, 	guint status, gpointer userdata)
+static void cb_service_enabled (GObject *self, guint status, gpointer userdata)
 {
 	g_printf("cb_service_enabled: status(%d) userdata(0x%x)", status, (unsigned int)userdata);
 
@@ -398,12 +394,15 @@ static void print_menu()
 	g_printf("8a.  location_get_last_satellite\n");
 	g_printf("9.   location_get_distance\n");
 	g_printf("10.  location_is_supported_method\n");
-	g_printf("11.  location_is_enabled_gps\n");
 	g_printf("99.  location_send_command\n");
+#ifndef _TIZEN_PUBLIC_
+	g_printf("99a.  location_send_command(get_auth)\n");
+	g_printf("99b.  location_send_command(add_to_list)\n");
+#endif
 	g_printf("a?.  signals:(1)'service-enabled',(2)'service-disabled',(3)'service-updated',(4)'zone-in',(5)'zone-out'\n");
 	g_printf("b?.  disconnect signals:(1)'service-enabled',(2)'service-disabled',(3)'service-updated',(4)'zone-in',(5)'zone-out'\n");
-	g_printf("c?. (1)Set boundary, (2)Get boundary, (3) Remove boundary, (4) Remove all boundaries, (5)Set device name, \n");
-	g_printf("    (6)Set position interval (7) Set velocity interval (8) Set satellite interval\n");
+	g_printf("c?. (1)Set boundary, (2)Get boundary, (3) Remove boundary, (4) Remove all boundaries, \n");
+	g_printf("    (5)Set position interval (6) Set velocity interval (7) Set satellite interval\n");
 	g_printf("==================================== Property ====================================\n");
 	PrintProperty(location_obj);
 	g_printf("\n==================================================================================\n");
@@ -417,7 +416,7 @@ int main(int argc, char** argv)
 	GError *gerr = NULL;
 
 	// If application is executed by AUL, this is not needed.
-	g_setenv("PKG_NAME", "org.tizen.location-api-test", 1);
+	g_setenv("PKG_NAME", "com.samsung.location-api-test", 1);
 
 	g_type_init();
 
@@ -548,7 +547,7 @@ int main(int argc, char** argv)
 			guint azimuth;
 			gint snr;
 
-			ret =  location_get_satellite (location_obj, &sat);
+			ret = location_get_satellite (location_obj, &sat);
 			GetLocationError(str, ret);
 			g_printf("location_get_satellite: returned value [%s]\n", str);
 			if (ret == LOCATION_ERROR_NONE) {
@@ -634,11 +633,6 @@ int main(int argc, char** argv)
 
 			g_printf("Method[%s] is %s.", method_str, is_supported ? "supported" : "not supported");
 
-		}else if(0 == g_strcmp0("11", strOpt)) {
-			gboolean is_enabled = FALSE;
-			is_enabled = location_is_enabled_gps(location_obj);
-			if(is_enabled == TRUE) g_printf("GPS is turned on");
-			else g_printf("GPS is turned off");
 		}else if(0 == g_strcmp0("99", strOpt)) {
 			int ret = 0;
 			const char *str = "command";
@@ -647,6 +641,24 @@ int main(int argc, char** argv)
 				g_printf("Success to send command[%s]", str);
 			else
 				g_printf("Fail to send command[%s]. Error[%d]", str, ret);
+#ifndef _TIZEN_PUBLIC_
+		}else if(0 == g_strcmp0("99a", strOpt)) {
+			int ret = 0;
+			const char *str = "GET_APP_AUTHORITY";
+			ret = location_send_command(str);
+			if(ret == 0)
+				g_printf("Success to send command[%s]", str);
+			else
+				g_printf("Fail to send command[%s]. Error[%d]", str, ret);
+		}else if(0 == g_strcmp0("99b", strOpt)) {
+			int ret = 0;
+			const char *str = "ADD_APPLIST";
+			ret = location_send_command(str);
+			if(ret == 0)
+				g_printf("Success to send command[%s]", str);
+			else
+				g_printf("Fail to send command[%s]. Error[%d]", str, ret);
+#endif
 		}else if(0 == g_strcmp0("a1",strOpt)){
 			if(location_obj && !g_sig_enable) {
 				g_sig_enable = g_signal_connect (location_obj, "service-enabled", G_CALLBACK(cb_service_enabled), location_obj);
@@ -795,28 +807,21 @@ int main(int argc, char** argv)
 
 		}else if(0 == g_strcmp0("c4",strOpt)){
 			location_boundary_foreach(location_obj, RemoveBoundary, location_obj);
-		}else if(0 == g_strcmp0("c5",strOpt)){
-			char buf[255];
-			char *str = NULL;
-			g_printf("Input device name: ");
-			str = fgets(buf, 255, stdin);
-			buf[strlen(buf)-1]='\0';
-			g_object_set(location_obj, "dev-name", buf, NULL);
-		} else if (0 == g_strcmp0("c6", strOpt)) {
+		} else if (0 == g_strcmp0("c5", strOpt)) {
 			guint interval = 1;
 			int len = 0;
 			g_printf("Input interval[1~120]:");
 			len = scanf("%u", &interval);
 			g_printf("changed interval to [%u]\n", interval);
 			g_object_set(location_obj, "pos-interval", interval, NULL);
-		} else if (0 == g_strcmp0("c7", strOpt)) {
+		} else if (0 == g_strcmp0("c6", strOpt)) {
 			int len = 0;
 			guint interval = 1;
 			g_printf("Input interval[1~120]:");
 			len = scanf("%u", &interval);
 			g_printf("changed interval to [%u]\n", interval);
 			g_object_set(location_obj, "vel-interval", interval, NULL);
-		} else if (0 == g_strcmp0("c8", strOpt)) {
+		} else if (0 == g_strcmp0("c7", strOpt)) {
 			guint interval = 1;
 			int len = 0;
 			g_printf("Input interval[1~120]:");

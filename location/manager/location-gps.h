@@ -31,15 +31,15 @@
 
 G_BEGIN_DECLS
 
-#define LOCATION_TYPE_GPS                  (location_gps_get_type ())
-#define LOCATION_GPS(obj)                  (G_TYPE_CHECK_INSTANCE_CAST ((obj), LOCATION_TYPE_GPS, LocationGps))
-#define LOCATION_IS_GPS(obj)               (G_TYPE_CHECK_INSTANCE_TYPE ((obj), LOCATION_TYPE_GPS))
-#define LOCATION_GPS_CLASS(klass)          (G_TYPE_CHECK_CLASS_CAST ((klass), LOCATION_TYPE_GPS, LocationGpsClass))
-#define LOCATION_IS_GPS_CLASS(klass)       (G_TYPE_CHECK_CLASS_TYPE ((klass), LOCATION_TYPE_GPS))
-#define LOCATION_GPS_GET_CLASS(obj)        (G_TYPE_INSTANCE_GET_CLASS ((obj), LOCATION_TYPE_GPS, LocationGpsClass))
+#define LOCATION_TYPE_GPS					(location_gps_get_type ())
+#define LOCATION_GPS(obj)					(G_TYPE_CHECK_INSTANCE_CAST ((obj), LOCATION_TYPE_GPS, LocationGps))
+#define LOCATION_IS_GPS(obj)				(G_TYPE_CHECK_INSTANCE_TYPE ((obj), LOCATION_TYPE_GPS))
+#define LOCATION_GPS_CLASS(klass)			(G_TYPE_CHECK_CLASS_CAST ((klass), LOCATION_TYPE_GPS, LocationGpsClass))
+#define LOCATION_IS_GPS_CLASS(klass)		(G_TYPE_CHECK_CLASS_TYPE ((klass), LOCATION_TYPE_GPS))
+#define LOCATION_GPS_GET_CLASS(obj)			(G_TYPE_INSTANCE_GET_CLASS ((obj), LOCATION_TYPE_GPS, LocationGpsClass))
 
-typedef struct _LocationGps        LocationGps;
-typedef struct _LocationGpsClass   LocationGpsClass;
+typedef struct _LocationGps			LocationGps;
+typedef struct _LocationGpsClass	LocationGpsClass;
 
 struct _LocationGps
 {
@@ -53,6 +53,8 @@ struct _LocationGpsClass
 	void (* enabled) (guint type);
 	void (* disabled) (guint type);
 	void (* updated) (guint type, gpointer data, gpointer accuracy);
+	void (* location_update) (gint error, gpointer position, gpointer velocity, gpointer accuracy);
+	void (* batch_updated) (guint batch_interval, guint batch_period);
 	void (* zone_in) (gpointer boundary, gpointer position, gpointer accuracy);
 	void (* zone_out) (gpointer boundary, gpointer position, gpointer accuracy);
 };

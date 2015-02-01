@@ -24,6 +24,7 @@
 #endif
 
 #include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -40,16 +41,6 @@ int location_application_get_authority (void)
 int location_application_set_authority (int auth)
 {
 	return LOCATION_ERROR_NONE;
-}
-
-int location_application_add_app_to_applist (void)
-{
-	return TRUE;
-}
-
-int location_application_enabled (void)
-{
-	return TRUE;
 }
 
 static gint compare_position (gconstpointer a, gconstpointer b)
@@ -108,7 +99,7 @@ boundary_compare (gconstpointer comp1, gconstpointer comp2)
 				if (boundary2_next == NULL) boundary2_next = g_list_first(priv2->boundary->polygon.position_list);
 
 				boundary1_next = g_list_next(priv1->boundary->polygon.position_list);
-				if (location_position_equal((LocationPosition*)boundary1_next->data, (LocationPosition*)boundary2_prev->data) == TRUE){
+				if (boundary1_next && location_position_equal((LocationPosition*)boundary1_next->data, (LocationPosition*)boundary2_prev->data) == TRUE){
 					boundary1_next = g_list_next(boundary1_next);
 					while (boundary1_next) {
 						boundary2_prev = g_list_previous(boundary2_prev);
@@ -120,7 +111,7 @@ boundary_compare (gconstpointer comp1, gconstpointer comp2)
 					}
 					ret = 0;
 				}
-				else if (location_position_equal((LocationPosition*)boundary1_next->data, (LocationPosition*)boundary2_next->data) == TRUE) {
+				else if (boundary1_next && location_position_equal((LocationPosition*)boundary1_next->data, (LocationPosition*)boundary2_next->data) == TRUE) {
 					boundary1_next = g_list_next(boundary1_next);
 					while(boundary1_next) {
 						boundary2_next = g_list_next(boundary2_next);
@@ -156,18 +147,19 @@ int set_prop_boundary(GList **prev_boundary_priv_list, GList *new_boundary_priv_
 	GList *check_list = NULL;
 
 	LocationBoundaryPrivate *new_priv = NULL;
-	LocationBoundaryPrivate *copy_priv = g_slice_new0(LocationBoundaryPrivate);
 
 	while((new_priv = (LocationBoundaryPrivate *) g_list_nth_data(new_boundary_priv_list, index)) != NULL) {
 		check_list = g_list_find_custom(*prev_boundary_priv_list, new_priv, (GCompareFunc)boundary_compare);
 		if (check_list == NULL) {
-			LOCATION_LOGD("Set Prop >> boundary type: [%d]", new_priv->boundary->type);
+			LocationBoundaryPrivate *copy_priv = g_slice_new0(LocationBoundaryPrivate);
 			copy_priv->boundary = location_boundary_copy(new_priv->boundary);
 			copy_priv->zone_status = new_priv->zone_status;
 			*prev_boundary_priv_list = g_list_append(*prev_boundary_priv_list, copy_priv);
 		}
 		index++;
 	}
+	if (check_list) g_list_free(check_list);
+
 	*prev_boundary_priv_list = g_list_first(*prev_boundary_priv_list);
 
 	return LOCATION_ERROR_NONE;

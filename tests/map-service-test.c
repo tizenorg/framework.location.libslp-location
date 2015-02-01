@@ -23,7 +23,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <glib/gprintf.h>
-#include <gconf/gconf-client.h>
 #include <location-map-service.h>
 #include "location-api-test-util.h"
 #include "location-geocode.h"
@@ -121,6 +120,9 @@ static void SelectOpt(char* buf)
 	int iLen = 0;
 	char *str = NULL;
 	str = fgets(buf, 255, stdin);
+	if (NULL == str){
+		g_printf(" fgets return NULL. \n");
+	}
 	iLen = g_utf8_strlen(buf, -1);
 	buf[iLen-1] = '\0';
 }
@@ -142,6 +144,9 @@ static double PromptDB()
 	double ret;
 	char *str = NULL;
 	str = fgets(buf, 255, stdin);
+	if (NULL == str){
+		g_printf(" fgets return NULL. \n");
+	}
 	buf[strlen(buf)-1]='\0';
 	ret = g_ascii_strtod(buf, NULL);
 	return ret;
@@ -169,24 +174,6 @@ static void PrintAcc (gpointer data, gpointer user_data)
 static void PrintProperty (LocationObject* loc)
 {
 	if (!loc) return;
-#if 0
-	LocationMethod method = LOCATION_METHOD_NONE;
-	gchar method_str[STR_MAX] = {0, };
-
-	gchar* devname = NULL;
-
-	g_object_get(loc, "method", &method, NULL);
-	GetMethod(method_str, method);
-	g_printf("method[%s] ", method_str);
-
-	if (LOCATION_METHOD_GPS == method) {
-		g_object_get(loc, "dev-name", &devname, NULL);
-		if (devname) {
-			g_printf("dev-name[%s] ", devname);
-			g_free(devname);
-		}
-	}
-#endif
 }
 
 static void _print_property (gpointer data, gpointer user_data)
@@ -226,7 +213,7 @@ __plugin_print_poi_list (gpointer data, gpointer user_data)
 			landmark_linkobject_get_link_string(location_landmark_get_related( landmark)),
 			landmark_linkobject_get_id(location_landmark_get_related( landmark)),
 			landmark_linkobject_get_type(location_landmark_get_related( landmark)));
-	g_printf("Rating details : [AVG: %d],[COUNT:%d]",
+	g_printf("Rating details : [AVG: %f],[COUNT:%d]",
 			landmark_rating_get_average(location_landmark_get_rating(landmark)),
 			landmark_rating_get_count(location_landmark_get_rating(landmark)));
 	for(i=0;i<g_list_length(location_landmark_get_editorial(landmark));i++)
@@ -287,7 +274,7 @@ static void Print_form_of_way (LocationRoadElement* road_element)
 {
 	g_printf("+++Print form of way begin \n");
 
-	FormOfWay form = location_route_element_get_form_of_way(road_element);
+	FormOfWay form = location_road_element_get_form_of_way(road_element);
 
 	switch (form) {
 		case FOW_UNDEFINED:
@@ -361,11 +348,11 @@ static void Print_form_of_way (LocationRoadElement* road_element)
 	g_printf("---Print form of way end\n");
 }
 
-static void Print_transit_type (LocationRoadElement* road_element)
+static void Print_transit_type (LocationRouteTransitElement* element)
 {
 	g_printf("+++Print transit type begin \n");
 
-	TransitType ttype = location_route_element_get_transit_type(road_element);
+	TransitType ttype = location_route_transit_element_get_transit_type(element);
 	switch (ttype) {
 		case TRANSIT_TYPE_BUS_PUBLIC:
 			g_printf("Indicates transit type is bus public\n");
@@ -442,85 +429,104 @@ static void Print_transit_type (LocationRoadElement* road_element)
 	g_printf("---Print transit type end\n");
 }
 
-static void Print_road_element(LocationRouteStep *step)
+static void _print_elem(gpointer data, gpointer user_data)
 {
-	g_printf("+++PrintRoadElement begin\n");
-	LocationRoadElement* road_element = location_route_step_get_road_element(step);
+	LocationRouteStep* step = (LocationRouteStep*) user_data;
+	LocationRouteElement* elem = (LocationRouteElement*) data;
 
-	Print_transit_type(road_element);
-	Print_form_of_way( road_element);
+	if(location_route_element_get_is_transit_element(elem))
+	{
+		LocationRouteTransitElement* transit_element = location_route_element_get_route_transit_element(elem);
 
-	gboolean is_plural = location_route_element_is_plural(road_element);
-	if (is_plural) {
-		g_printf(" The road element is plural \n");
-	}
-	else {
-		g_printf(" The road element is not plural \n");
-	}
-	gchar *road_name = location_route_element_get_road_name(road_element);
-	gchar *route_name = location_route_element_get_route_name(road_element);
-	gfloat speed_l = location_route_element_get_speed_limit(road_element);
-	guint speed = location_route_element_get_average_speed_m_s(road_element);
-	guint nums = location_route_element_get_number_of_lanes(road_element);
-	guint s_time = location_route_element_get_element_start_time(road_element);
-	guint t_time = location_route_element_get_element_travel_time(road_element);
+		
+		Print_transit_type(transit_element);
+		gchar *t_dest = location_route_transit_element_get_transit_destination(transit_element);
+		gchar *t_line = location_route_transit_element_get_transit_line_name(transit_element);
+		gchar *official = location_route_transit_element_get_system_official_name(transit_element);
+		gchar *short_name = location_route_transit_element_get_system_short_name(transit_element);
 
-	g_printf("RoadElement: road_name(%s), route_name(%s), speed_l(%f), speed(%d), nums(%d), s_time(%d), t_time(%d)\n",
-		road_name, route_name, speed_l, speed, nums, s_time, t_time);
-
-	gboolean is_pedestrain = location_route_element_road_element_is_pedestrian(road_element);
-	if (is_pedestrain) {
-		g_printf(" The road is allowed only for pedestrians \n");
-	}
-	else {
-		g_printf(" The road is not only for pedestrians \n");
-	}
-
-	gboolean is_valid = location_route_element_road_element_is_valid(road_element);
-	if (is_valid) {
-		g_printf(" This road element is valid \n");
-	}
-	else {
-		g_printf(" This road element is invalid \n");
-	}
-
-	gchar *t_dest = location_route_element_get_transit_destination(road_element);
-	gchar *t_line = location_route_element_get_transit_line_name(road_element);
-	gchar *official = location_route_element_get_system_official_name(road_element);
-	gchar *short_name = location_route_element_get_system_short_name(road_element);
-
-	gchar *type_name = location_route_element_get_transit_type_name(road_element);
-	guint d_t = location_route_element_get_transit_departure_time(road_element);
-	guint a_t = location_route_element_get_transit_arrival_time(road_element);
-	LocationRouteTransitStop *d_s = location_route_element_get_transit_departure_station(road_element);
-	gchar *d_s_name = location_route_transit_get_station_name(d_s);
-	gint d_s_level = location_route_transit_get_platform_level(d_s);
-	LocationPosition *d_s_plat_pos = location_route_transit_get_platform_coordinates(d_s);
-	if (d_s_plat_pos) {
+		gchar *type_name = location_route_transit_element_get_transit_type_name(transit_element);
+		guint d_t = location_route_transit_element_get_transit_departure_time(transit_element);
+		guint a_t = location_route_transit_element_get_transit_arrival_time(transit_element);
+		LocationRouteTransitStop *d_s = location_route_transit_element_get_transit_departure_station(transit_element);
+		gchar *d_s_name = location_route_transit_get_station_name(d_s);
+		gint d_s_level = location_route_transit_get_platform_level(d_s);
+		LocationPosition *d_s_plat_pos = location_route_transit_get_platform_coordinates(d_s);
+		if (d_s_plat_pos) {
 		g_printf ("d_s_plat_pos: time: %d, lat: %f, long: %f, alt: %f, status: %d\n",
 			d_s_plat_pos->timestamp, d_s_plat_pos->latitude, d_s_plat_pos->longitude, d_s_plat_pos->altitude, d_s_plat_pos->status);
 		//location_position_free (d_s_plat_pos);
-	}
+		}
 
-	LocationPosition *d_s_egr_pos = location_route_transit_get_egress_coordinates(d_s);
-	if (d_s_egr_pos) {
+		LocationPosition *d_s_egr_pos = location_route_transit_get_egress_coordinates(d_s);
+		if (d_s_egr_pos) {
 		g_printf ("d_s_egr_pos: time: %d, lat: %f, long: %f, alt: %f, status: %d\n",
 			d_s_egr_pos->timestamp, d_s_egr_pos->latitude, d_s_egr_pos->longitude, d_s_egr_pos->altitude, d_s_egr_pos->status);
 		//location_position_free (d_s_egr_pos);
-	}
+		}
 
-	g_printf("Transit: d_s_name(%s), d_s_level(%d)\n", d_s_name, d_s_level);
+		g_printf("Transit: d_s_name(%s), d_s_level(%d)\n", d_s_name, d_s_level);
 
-	g_printf("Transit: t_dest(%s), t_line(%s), official(%s), short(%s), type_name(%s), d_t(%d), a_t(%d)\n",
+		g_printf("Transit: t_dest(%s), t_line(%s), official(%s), short(%s), type_name(%s), d_t(%lld), a_t(%lld)\n",
 		t_dest, t_line, official, short_name, type_name, d_t, a_t);
 
-	LocationRouteTransitStop *a_s = location_route_element_get_transit_arrival_station(road_element);
-	gchar *a_s_name = location_route_transit_get_station_name(a_s);
-	gint a_s_level = location_route_transit_get_platform_level(a_s);
-	if (a_s) {
+		LocationRouteTransitStop *a_s = location_route_transit_element_get_transit_arrival_station(transit_element);
+		gchar *a_s_name = location_route_transit_get_station_name(a_s);
+		gint a_s_level = location_route_transit_get_platform_level(a_s);
+		if (a_s) {
 		g_printf("Transit: a_s_name(%s), a_s_level(%d)  \n",a_s_name, a_s_level);
+		}
 	}
+	else
+	{
+		LocationRoadElement* road_element = location_route_element_get_road_element(elem);
 
+		Print_form_of_way( road_element);
+
+		gboolean is_plural = location_road_element_is_plural(road_element);
+		if (is_plural) {
+			g_printf(" The road element is plural \n");
+		}
+		else {
+			g_printf(" The road element is not plural \n");
+		}
+		gchar *road_name = location_road_element_get_road_name(road_element);
+		gchar *route_name = location_road_element_get_route_name(road_element);
+		gfloat speed_l = location_road_element_get_speed_limit(road_element);
+		guint speed = location_road_element_get_average_speed_m_s(road_element);
+		guint nums = location_road_element_get_number_of_lanes(road_element);
+		guint s_time = location_road_element_get_start_time(road_element);
+		guint t_time = location_road_element_get_travel_time(road_element);
+
+		g_printf("RoadElement: road_name(%s), route_name(%s), speed_l(%f), speed(%d), nums(%d), s_time(%lld), t_time(%lld)\n",
+			road_name, route_name, speed_l, speed, nums, s_time, t_time);
+
+		gboolean is_pedestrain = location_road_element_is_pedestrian(road_element);
+		if (is_pedestrain) {
+			g_printf(" The road is allowed only for pedestrians \n");
+		}
+		else {
+			g_printf(" The road is not only for pedestrians \n");
+		}
+
+		gboolean is_valid = location_road_element_is_valid(road_element);
+		if (is_valid) {
+			g_printf(" This road element is valid \n");
+		}
+		else {
+			g_printf(" This road element is invalid \n");
+		}
+	}
+	
+}
+
+static void Print_road_element(LocationRouteStep *step)
+{
+	g_printf("+++PrintRoadElement begin\n");
+	GList* route_elem_list = location_route_step_get_route_elment_list(step);
+	if (route_elem_list) {
+		g_list_foreach(route_elem_list, _print_elem, step);
+	}
 	g_printf("---Print Road Element end\n");
 }
 
@@ -569,20 +575,6 @@ static void print_route_maneuver(LocationRouteManeuver *maneuver)
 	g_printf("---print route maneuver  end\n");
 }
 
-static void cb_print_maneuver_lanes (gpointer data, gpointer user_data)
-{
-	g_printf("+++lanes begin\n");
-	LocationRouteLaneInfo *lane = (LocationRouteLaneInfo *)data;
-
-	gboolean on_route = location_route_lane_is_on_route(lane);
-	if (on_route) {
-		g_printf("this lane is on the route\n");
-	} else {
-		g_printf("this lane is NOT on the route\n");
-	}
-	g_printf("---lanes end\n");
-}
-
 static void cb_print_route_step (gpointer data, gpointer user_data)
 {
 	g_printf("+++Step begin\n");
@@ -598,10 +590,6 @@ static void cb_print_route_step (gpointer data, gpointer user_data)
 	LocationRouteManeuver *maneuver = location_route_step_get_maneuver(step);
 	print_route_maneuver(maneuver);
 
-	GList *lanes = location_route_maneuver_get_lanes(maneuver);
-	if (lanes) {
-		g_list_foreach(lanes, cb_print_maneuver_lanes, NULL);
-	}
 	g_printf("---Step end\n");
 }
 
@@ -919,6 +907,10 @@ static void print_menu()
 	g_printf("17.  location_map_get_default_provider \n");
 	g_printf("18.  location_map_set_provider \n");
 	g_printf("19.  location_map_cancel_geocode_request. \n");
+	g_printf("20.  location_map_get_map_version. \n");
+	g_printf("21.  location_map_updatea_map_version[TRUE]. \n");
+	g_printf("22.  location_map_updatea_map_version[FALSE]. \n");
+	g_printf("23.  location_map_is_latest_map_data \n");
 	g_printf("99.  change map provider to default\n");
 	g_printf("99a. change map provider to decarta\n");
 	g_printf("99b. change map provider to osm\n");
@@ -937,7 +929,7 @@ int main(int argc, char** argv)
 	guint req_id = 0;
 
 	// If application is executed by AUL, this is not needed.
-	g_setenv("PKG_NAME", "org.tizen.map-service-test", 1);
+	g_setenv("PKG_NAME", "com.samsung.map-service-test", 1);
 
 	g_type_init();
 
@@ -977,6 +969,11 @@ int main(int argc, char** argv)
 				continue;
 			}
 			map_obj = location_map_new(NULL);
+
+			LocationMapPref* mapPref =location_map_pref_new();
+			location_map_pref_set_maps_key(mapPref,"SpMLqvWrvuFmp27kV4e6/Md_LeHoPn0b4LPOxB60p4A");
+			location_map_set_service_pref(map_obj, mapPref);
+
 			if(map_obj) g_printf("Success\n");
 			else             g_printf("Failed\n");
 		} else if (0 == g_strcmp0("2a",strOpt)) {
@@ -1002,6 +999,11 @@ int main(int argc, char** argv)
 				continue;
 			}
 			map_obj = location_map_new("nlp");
+
+			LocationMapPref* mapPref =location_map_pref_new();
+			location_map_pref_set_maps_key(mapPref,"SpMLqvWrvuFmp27kV4e6/Md_LeHoPn0b4LPOxB60p4A");
+			location_map_set_service_pref(map_obj, mapPref);
+
 			if(map_obj) {
 				g_printf("Success\n");
 			}
@@ -1091,6 +1093,9 @@ int main(int argc, char** argv)
 				char buf[255];
 				g_printf("Input freeform address: ");
 				ret_str = fgets(buf, 255, stdin);
+				if (NULL == ret_str){
+					g_printf(" fgets return NULL \n");
+				}
 				buf[strlen(buf)-1]='\0';
 				data->str_addr = g_strdup(buf);
 			}
@@ -1383,8 +1388,7 @@ int main(int argc, char** argv)
 					g_printf("Fail to search POI by address. Error[%s]\n", str);
 			} else {
 					g_printf("Seach POI by address success, req_id %d\n", req_id);
-		}
-
+			}
 			g_free(item);
 
 			g_free(addr);
@@ -1476,7 +1480,7 @@ int main(int argc, char** argv)
 			LocationRoadElementPenalty *penalty = NULL;
 			penalty = location_route_element_penalty_new ();
 
-			location_route_element_penalty_set_id(penalty, 100);
+			location_route_element_penalty_set_id(penalty, "Penalty1");
 			location_route_element_penalty_set_direction(penalty, DIR_BOTH);
 			location_route_element_penalty_set_penalty(penalty, 8);
 			location_route_element_penalty_set_speed(penalty, 90);
@@ -1498,11 +1502,15 @@ int main(int argc, char** argv)
 			location_route_options_set_minimum_change_time(options, 30);
 			location_route_options_set_transit_type_allowed(options, TRANSIT_TYPE_RAIL_LIGHT, TRUE);
 			location_route_options_set_maximum_changes(options, 2);
-			location_route_options_set_departure_time(options, 188);
-			location_route_options_set_arrival_time(options, 244);
+			location_route_options_set_departure_time(options, 1373282862);
+			//location_route_options_set_arrival_time(options, 244);
 
 			location_route_pref_set_options(pref, options);
 			location_route_options_free(options);
+
+			LocationMapPref* mapPref =location_map_pref_new();
+			location_map_pref_set_maps_key(mapPref,"SpMLqvWrvuFmp27kV4e6/Md_LeHoPn0b4LPOxB60p4A");
+			location_map_set_service_pref(map_obj, mapPref);
 
 			ret = location_map_request_route(map_obj, origin, destination, waypoint, pref, cb_route, NULL, &req_id);
 			GetLocationError(str, ret);
@@ -1521,6 +1529,10 @@ int main(int argc, char** argv)
 
 			LocationRoutePreference *pref = location_route_pref_new();
 			location_route_pref_set_route_type(pref, "FASTEST");
+
+			LocationMapPref* mapPref =location_map_pref_new();
+			location_map_pref_set_maps_key(mapPref,"SpMLqvWrvuFmp27kV4e6/Md_LeHoPn0b4LPOxB60p4A");
+			location_map_set_service_pref(map_obj, mapPref);
 
 			ret = location_map_request_route(map_obj, origin, destination, waypoint, pref, cb_route, NULL, &req_id);
 			GetLocationError(str, ret);
@@ -1619,6 +1631,38 @@ int main(int argc, char** argv)
 			}
 			else
 				g_printf("location_map_cancel_geocode_request, req_id %d\n", req_id);
+		}else if(0 == g_strcmp0("20", strOpt)) {
+			g_printf("Get map version\n");
+			gchar *version = NULL;
+			ret = location_map_get_map_version(map_obj, &version);
+			if (ret != LOCATION_ERROR_NONE) {
+				g_printf("Fail to get map version[%d]\n", ret);
+			} else {
+				g_printf("Version : %s\n", version);
+			}
+			if (version) g_free(version);
+		}else if(0 == g_strcmp0("21", strOpt)) {
+			ret = location_map_update_map_data(map_obj, TRUE);
+			if (ret != LOCATION_ERROR_NONE) {
+				g_printf("Fail to update map data[%d]\n", ret);
+			} else {
+				g_printf("Success to updata map data. [TRUE] \n");
+			}
+		}else if(0 == g_strcmp0("22", strOpt)) {
+			ret = location_map_update_map_data(map_obj, FALSE);
+			if (ret != LOCATION_ERROR_NONE) {
+				g_printf("Fail to update map data[%d]\n", ret);
+			} else {
+				g_printf("Success to updata map data. [FALSE] \n");
+			}
+		}else if (0 == g_strcmp0("23", strOpt)) {
+			gboolean is_lastest_map_data_flag = FALSE;
+			ret = location_map_is_latest_map_data(map_obj, &is_lastest_map_data_flag);
+			if (ret != LOCATION_ERROR_NONE) {
+				g_printf("Fail to check the latest map data. Error Code [%d]\n", ret);
+			} else {
+				g_printf("Success to check the latest map data. [%s]\n", is_lastest_map_data_flag ? "TRUE" : "FALSE");
+			}
 		}else if (0 == g_strcmp0 ("99", strOpt)) {
 			if (map_obj) {
 				g_object_set (map_obj, "provider", NULL, NULL);

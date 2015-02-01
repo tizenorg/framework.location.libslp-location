@@ -8,7 +8,6 @@ AC_CONFIG_SRCDIR([location])
 AM_INIT_AUTOMAKE([1.10.2 foreign -Wall -Werror])
 
 # Check programs for making executable
-m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 AC_PROG_CC
 AM_PROG_CC_C_O
 AC_PROG_INSTALL
@@ -23,14 +22,25 @@ if test "x$GCC" = "xyes"; then
 	LDFLAGS="$LDFLAGS -Wl,-z,defs -Wl,--as-needed -Wl,--hash-style=both"
 fi
 
+AC_ARG_ENABLE([docomo-location],
+	[AC_HELP_STRING([--enable-docomo-location],[docomo feature enable [default=no]])],
+	[case "${enableval}" in
+	yes) enable_dcm=yes ;;
+	no) enable_dcm=no ;;
+	*) AC_MSG_ERROR([Bad value ${enableval} for --enable-docomo-location]) ;;
+	esac],[enable_dcm=no])
+if ([test "x$enable_dcm" = xyes]); then
+	CFLAGS="$CFLAGS -DDOCOMO_FEATURE"
+fi
+
 # Add -g option to CFLAGS
 AC_ARG_ENABLE([debug],
-        [AC_HELP_STRING([--enable-debug],[turn on debugging [default=no]])],
-        [case "${enableval}" in
-         yes) enable_dbg=yes ;;
-         no) enable_dbg=no ;;
-         *) AC_MSG_ERROR([Bad value ${enableval} for --enable-debug]) ;;
-       esac],[enable_dbg=no])
+		[AC_HELP_STRING([--enable-debug],[turn on debugging [default=no]])],
+		[case "${enableval}" in
+		yes) enable_dbg=yes ;;
+		no) enable_dbg=no ;;
+		*) AC_MSG_ERROR([Bad value ${enableval} for --enable-debug]) ;;
+		esac],[enable_dbg=no])
 if ([test "x$enable_dbg" = xyes]); then
 	CFLAGS="$CFLAGS -g"
 fi
@@ -51,22 +61,22 @@ AC_COMPILE_IFELSE(
 AC_MSG_RESULT($has_visibility)
 
 # Check dependencies
-PKG_CHECK_MODULES(LOCATION, [glib-2.0 gobject-2.0 dbus-glib-1 gmodule-2.0 vconf vconf-internal-keys])
+PKG_CHECK_MODULES(LOCATION, [glib-2.0 gobject-2.0 gmodule-2.0 vconf vconf-internal-keys capi-appfw-app-manager capi-appfw-package-manager pkgmgr-info privacy-manager-client])
 AC_SUBST(LOCATION_LIBS)
 AC_SUBST(LOCATION_CFLAGS)
 
-#PKG_CHECK_MODULES(TEST, [glib-2.0 gconf-2.0 json-glib-1.0])
-#AC_SUBST(TEST_LIBS)
-#AC_SUBST(TEST_CFLAGS)
+PKG_CHECK_MODULES(TEST, [glib-2.0 json-glib-1.0 lbs-dbus])
+AC_SUBST(TEST_LIBS)
+AC_SUBST(TEST_CFLAGS)
 
 # Check dlog libraries
 AC_ARG_ENABLE([dlog],
-        [AC_HELP_STRING([--enable-dlog],[show dlog message [default=no]])],
-        [case "${enableval}" in
-         yes) enable_dlog=yes ;;
-         no) enable_dlog=no ;;
-         *) AC_MSG_ERROR([Bad value ${enableval} for --enable-dlog]) ;;
-       esac],[enable_dlog=no])
+		[AC_HELP_STRING([--enable-dlog],[show dlog message [default=no]])],
+		[case "${enableval}" in
+		yes) enable_dlog=yes ;;
+		no) enable_dlog=no ;;
+		*) AC_MSG_ERROR([Bad value ${enableval} for --enable-dlog]) ;;
+		esac],[enable_dlog=no])
 if ([test "x$enable_dlog" = xyes]); then
 	PKG_CHECK_MODULES(DLOG, [dlog], have_dlog="yes", have_dlog="no")
 	AC_SUBST(DLOG_LIBS)
@@ -83,8 +93,8 @@ location.pc
 Makefile
 location/Makefile
 location/manager/Makefile
-location/map-service/Makefile
 location/module/Makefile
+tests/Makefile
 ])
 
 AC_OUTPUT

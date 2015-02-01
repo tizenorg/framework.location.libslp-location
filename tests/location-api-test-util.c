@@ -129,7 +129,7 @@ char *json_util_get_polygon_name(int polygon_index)
 	JsonObject *polygon_obj = json_array_get_object_element(json_node_get_array(root), polygon_index);
 
 	name = (char *)json_object_get_string_member(polygon_obj, "name");
-	if (name == NULL)  return NULL;
+	if (name == NULL) return NULL;
 
 	return g_strdup(name);
 }

@@ -36,16 +36,16 @@ typedef struct{
 	char* path;
 } GMod;
 
-typedef struct{
+/*typedef struct{
 	GMod* gmod;
 	gpointer handler;
 	gpointer (*init)(LocModServiceOps* ops);
 	void (*shutdown)(gpointer handle);
 	LocModServiceOps ops;
-} LocationServiceMod;
+} LocationServiceMod;*/
 
 typedef struct{
-	GMod* gmod;	
+	GMod* gmod;
 	gpointer handler;
 	gpointer (*init)(LocModGpsOps* ops);
 	void (*shutdown)(gpointer handle);
@@ -53,12 +53,13 @@ typedef struct{
 } LocationGpsMod;
 
 typedef struct{
-	GMod* gmod;	
+	GMod* gmod;
 	gpointer handler;
 	gpointer (*init)(LocModWpsOps* ops);
 	void (*shutdown)(gpointer handle);
 	LocModWpsOps ops;
 } LocationWpsMod;
+
 
 G_BEGIN_DECLS
 
@@ -67,7 +68,7 @@ gpointer module_new(const char* module_name);
 void module_free(gpointer mod, const char* module_name);
 gboolean module_is_supported(const char *module_name);
 gchar *mod_get_realpath(const gchar *module_name);
-	
+
 G_END_DECLS
 
 #endif

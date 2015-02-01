@@ -35,7 +35,7 @@ G_BEGIN_DECLS
 void enable_signaling (LocationObject *obj, guint32 signals[LAST_SIGNAL], gboolean *prev_enabled, gboolean enabled, LocationStatus status);
 
 void position_signaling (LocationObject *obj, guint32 signals[LAST_SIGNAL],
-		int interval, guint *updated_interval,
+		guint interval, guint *updated_interval,
 		GList *prev_bound, LocationPosition *pos, LocationAccuracy *acc);
 
 void velocity_signaling (LocationObject* obj, guint32 signals[LAST_SIGNAL],

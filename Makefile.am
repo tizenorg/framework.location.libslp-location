@@ -1,6 +1,6 @@
 ACLOCAL_AMFLAGS=-I m4
 
-SUBDIRS=location
+SUBDIRS=location tests
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = location.pc

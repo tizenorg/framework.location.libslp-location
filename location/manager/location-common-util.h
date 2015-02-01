@@ -26,6 +26,10 @@
 #include <location-ielement.h>
 #include <location-boundary.h>
 
+#define CAPP	1
+#define WEBAPP	2
+#define CPPAPP	3
+
 /**
  * @file location-common-util.h
  * @brief This file contains the common utils for LocationObject.
@@ -50,12 +54,8 @@ typedef struct _LocationBoundaryPrivate {
 	ZoneStatus zone_status;
 } LocationBoundaryPrivate;
 
-int location_application_manager (void);
-int location_application_enabled (void);
-
 int location_application_get_authority(void);
 int location_application_set_authority (int auth);
-int location_application_add_app_to_applist (void);
 
 int set_prop_boundary(GList **prev_boundary_list, GList *new_boundary_list);
 int set_prop_removal_boundary(GList **prev_boundary_list, LocationBoundary *boundary);

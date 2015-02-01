@@ -77,20 +77,6 @@ main (int argc, char *argv[])
 	g_object_get(loc, "method", &method, NULL);
 	g_debug("Get property>> method:%d", method);
 
-	char* devname = NULL;
-	g_object_get(loc, "dev-name", &devname, NULL);
-	if (devname) {
-		g_debug("Get property>> dev-name: %s", devname);
-		g_free(devname);
-	} else g_warning("failed to get property> dev-name");
-
-	g_object_set(loc, "dev-name", "/dev/test", NULL);
-	g_object_get(loc, "dev-name", &devname, NULL);
-	if (devname) {
-		g_debug("Get property>> dev-name: %s", devname);
-		g_free(devname);
-	} else g_warning("failed to set property> dev-name");
-
 	g_signal_connect (loc, "service-enabled", G_CALLBACK(cb_service_enabled), loc);
 	g_signal_connect (loc, "service-disabled", G_CALLBACK(cb_service_disabled), loc);
 	g_signal_connect (loc, "service-updated", G_CALLBACK(cb_service_updated), loc);

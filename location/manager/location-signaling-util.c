@@ -27,6 +27,37 @@
 #include "location-common-util.h"
 #include "location-log.h"
 
+#ifdef TIZEN_WERABLE
+typedef enum {
+	_ERR_TIMEOUT 	= -100,
+	_ERR_OUT_OF_SERVICE	= -101,
+	_ERR_LOCATION_SETTING_OFF = -102,/**< host device's location setting off */
+	_ERR_UNKNOWN	= -999, /*Unknown error */
+} timestamp_error_t;
+
+void
+error_signaling (LocationObject *obj,
+	guint32 signals[LAST_SIGNAL],
+	int error_code)
+{
+	g_return_if_fail(obj);
+	g_return_if_fail(signals);
+
+	switch (error_code) {
+		case _ERR_LOCATION_SETTING_OFF:{
+			LOCATION_LOGD("Signal emit: HOST_SETTING_OFF");
+			g_signal_emit (obj, signals[ERROR_EMITTED], 0, LOCATION_ERROR_SETTING_OFF);
+			break;
+		}
+		default: {
+			LOCATION_LOGD("Unhandled error.");
+			break;
+		}
+	}
+
+}
+#endif
+
 void
 enable_signaling (LocationObject *obj,
 	guint32 signals[LAST_SIGNAL],
@@ -51,7 +82,7 @@ enable_signaling (LocationObject *obj,
 void
 position_signaling (LocationObject *obj,
 	guint32 signals[LAST_SIGNAL],
-	int interval,
+	guint interval,
 	guint *updated_timestamp,
 	GList *prev_bound,
 	LocationPosition *pos,
@@ -70,7 +101,6 @@ position_signaling (LocationObject *obj,
 	if (!pos->timestamp)	return;
 
 	if (pos->timestamp - *updated_timestamp >= interval) {
-		LOCATION_LOGD("POSITION SERVICE_UPDATED");
 		g_signal_emit(obj, signals[SERVICE_UPDATED], 0, POSITION_UPDATED, pos, acc);
 		*updated_timestamp = pos->timestamp;
 	}
@@ -111,7 +141,6 @@ velocity_signaling (LocationObject *obj,
 	if (!vel->timestamp) return;
 
 	if (vel->timestamp - *updated_timestamp >= interval) {
-		LOCATION_LOGD("VELOCITY SERVICE_UPDATED");
 		g_signal_emit(obj, signals[SERVICE_UPDATED], 0, VELOCITY_UPDATED, vel, acc);
 		*updated_timestamp = vel->timestamp;
 	}
@@ -128,7 +157,7 @@ location_signaling (LocationObject *obj,
 	guint pos_interval,			// interval : support an update interval
 	guint vel_interval,
 	gboolean *prev_enabled,
-	guint *prev_pos_timestamp,	
+	guint *prev_pos_timestamp,
 	guint *prev_vel_timestamp,
 	LocationPosition **prev_pos,	// prev : keeping lastest info.
 	LocationVelocity **prev_vel,
@@ -138,6 +167,14 @@ location_signaling (LocationObject *obj,
 		LOCATION_LOGD("Invalid location with timestamp, 0");
 		return;
 	}
+
+	#ifdef TIZEN_WERABLE
+	if ((int)cur_pos->timestamp < 0) {
+		LOCATION_LOGD("error transferred via timestamp [%d]", cur_pos->timestamp);
+		error_signaling(obj, signals, cur_pos->timestamp);
+		return;
+	}
+	#endif
 
 	if (*prev_pos) location_position_free(*prev_pos);
 	if (*prev_vel) location_velocity_free(*prev_vel);
@@ -172,8 +209,8 @@ satellite_signaling(LocationObject *obj,
 	*prev_sat = location_satellite_copy (sat);
 
 	if (emit && sat->timestamp - *updated_timestamp >= interval) {
-		LOCATION_LOGD("SATELLITE SERVICE_UPDATED");
 		g_signal_emit(obj, signals[SERVICE_UPDATED], 0, SATELLITE_UPDATED, sat, NULL);
 		*updated_timestamp = sat->timestamp;
 	}
 }
+

@@ -4,7 +4,7 @@
  * Copyright (c) 2010-2013 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Contact: Youngae Kang <youngae.kang@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
- *          Genie Kim <daejins.kim@samsung.com>
+ *			Genie Kim <daejins.kim@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,15 +31,15 @@
 
 G_BEGIN_DECLS
 
-typedef struct _LocationHybrid        LocationHybrid;
-typedef struct _LocationHybridClass   LocationHybridClass;
+typedef struct _LocationHybrid			LocationHybrid;
+typedef struct _LocationHybridClass		LocationHybridClass;
 
-#define LOCATION_TYPE_HYBRID               (location_hybrid_get_type ())
-#define LOCATION_HYBRID(obj)                  (G_TYPE_CHECK_INSTANCE_CAST ((obj), LOCATION_TYPE_HYBRID, LocationHybrid))
-#define LOCATION_IS_HYBRID(obj)               (G_TYPE_CHECK_INSTANCE_TYPE ((obj), LOCATION_TYPE_HYBRID))
-#define LOCATION_HYBRID_CLASS(klass)          (G_TYPE_CHECK_CLASS_CAST ((klass), LOCATION_TYPE_HYBRID, LocationHybridClass))
-#define LOCATION_IS_HYBRID_CLASS(klass)       (G_TYPE_CHECK_CLASS_TYPE ((klass), LOCATION_TYPE_HYBRID))
-#define LOCATION_HYBRID_GET_CLASS(obj)        (G_TYPE_INSTANCE_GET_CLASS ((obj), LOCATION_TYPE_HYBRID, LocationHybridClass))
+#define LOCATION_TYPE_HYBRID				(location_hybrid_get_type ())
+#define LOCATION_HYBRID(obj)				(G_TYPE_CHECK_INSTANCE_CAST ((obj), LOCATION_TYPE_HYBRID, LocationHybrid))
+#define LOCATION_IS_HYBRID(obj)				(G_TYPE_CHECK_INSTANCE_TYPE ((obj), LOCATION_TYPE_HYBRID))
+#define LOCATION_HYBRID_CLASS(klass)		(G_TYPE_CHECK_CLASS_CAST ((klass), LOCATION_TYPE_HYBRID, LocationHybridClass))
+#define LOCATION_IS_HYBRID_CLASS(klass)		(G_TYPE_CHECK_CLASS_TYPE ((klass), LOCATION_TYPE_HYBRID))
+#define LOCATION_HYBRID_GET_CLASS(obj)		(G_TYPE_INSTANCE_GET_CLASS ((obj), LOCATION_TYPE_HYBRID, LocationHybridClass))
 
 struct _LocationHybrid
 {
@@ -53,6 +53,7 @@ struct _LocationHybridClass
 	void (* enabled) (guint type);
 	void (* disabled) (guint type);
 	void (* updated) (guint type, gpointer data, gpointer accuracy);
+	void (* location_update) (gint error, gpointer position, gpointer velocity, gpointer accuracy);
 	void (* zone_in) (gpointer boundary, gpointer position, gpointer accuracy);
 	void (* zone_out) (gpointer boundary, gpointer position, gpointer accuracy);
 };

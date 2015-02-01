@@ -21,7 +21,7 @@
 
 /*
  * location_boundary_if_inside(LocationBoundary* boundary,
- * 			LocationPosition* position)
+ *			LocationPosition* position)
  * code from
  *
  * Copyright (c) 1970-2003, Wm. Randolph Franklin
@@ -225,7 +225,7 @@ location_boundary_if_inside (LocationBoundary* boundary,
 			center.longitude = boundary->circle.center->longitude;
 
 			location_get_distance(&center, position, &distance);
-			if (distance  < boundary->circle.radius){
+			if (distance < boundary->circle.radius){
 				LOCATION_LOGD("\tInside Circle boundary");
 				is_inside = TRUE;
 			}
@@ -233,20 +233,16 @@ location_boundary_if_inside (LocationBoundary* boundary,
 		}
 		case LOCATION_BOUNDARY_POLYGON: {
 
-			int i, j;
 			double interval_x = 0.0, interval_y = 0.0;
 			double x0, y0;
 			gboolean edge_area;
 			int crossing_num = 0;
 			GList *position_list = boundary->polygon.position_list;
-			int count = g_list_length(position_list);
 			GList *pos1_list = NULL;
 			GList *pos2_list = NULL;
 			LocationPosition* pos1 = NULL;
 			LocationPosition* pos2 = NULL;
 
-			i = 0;
-			j = count - 1;
 			pos1_list = g_list_first(position_list);
 			pos2_list = g_list_last(position_list);
 			while(pos1_list) {
@@ -329,6 +325,8 @@ location_boundary_add(const LocationObject *obj, const LocationBoundary *boundar
 
 	g_object_set(G_OBJECT(obj), "boundary", boundary_priv_list, NULL);
 
+	g_list_free(boundary_priv_list);
+
 	return LOCATION_ERROR_NONE;
 }
 
@@ -367,6 +365,8 @@ location_boundary_foreach(const LocationObject *obj, LocationBoundaryFunc func, 
 	}
 
 	g_list_foreach(boundary_list, (GFunc)func, user_data);
+
+	g_list_free(boundary_list);
 
 	return LOCATION_ERROR_NONE;
 }
@@ -452,6 +452,8 @@ location_boundary_get_center_position (LocationBoundary *boundary)
 			}
 			break;
 		}
+		default:
+			break;
 	}
 	return center;
 }

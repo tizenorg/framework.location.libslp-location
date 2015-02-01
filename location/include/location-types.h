@@ -4,7 +4,7 @@
  * Copyright (c) 2010-2013 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Contact: Youngae Kang <youngae.kang@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
- *          Genie Kim <daejins.kim@samsung.com>
+ *			Genie Kim <daejins.kim@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,18 +42,18 @@ G_BEGIN_DECLS
  * @brief This represents the returned error code of used functions.
  */
 typedef enum {
-	LOCATION_ERROR_NONE = 0,       ///< Success.
-	LOCATION_ERROR_NOT_ALLOWED,    ///< Location servie is not allowed.
-	LOCATION_ERROR_NOT_AVAILABLE,  ///< Location service is not available.
-	LOCATION_ERROR_NETWORK_FAILED, ///< Network is not available.
-	LOCATION_ERROR_NETWORK_NOT_CONNECTED, ///< Network is not connected.
-	LOCATION_ERROR_CONFIGURATION,  ///< Configuration setting is not correct.
-	LOCATION_ERROR_PARAMETER,      ///< Input parameter is not correct.
-	LOCATION_ERROR_NOT_FOUND,      ///< Output is not found.
-	LOCATION_ERROR_NOT_SUPPORTED,  ///< Not supported.
-	LOCATION_ERROR_UNKNOWN,        ///< Unknown error.
-	LOCATION_ERROR_SETTING_OFF,	///< Location setting(GPS/WPS) is off
-	LOCATION_ERROR_SECURITY_DENIED, ///< system disables location service.
+	LOCATION_ERROR_NONE = 0,				///< Success.
+	LOCATION_ERROR_NOT_ALLOWED,				///< Location servie is not allowed from privacy settings.
+	LOCATION_ERROR_NOT_AVAILABLE,			///< Location service is not available.
+	LOCATION_ERROR_NETWORK_FAILED,			///< Network is not available.
+	LOCATION_ERROR_NETWORK_NOT_CONNECTED,	///< Network is not connected.
+	LOCATION_ERROR_CONFIGURATION,			///< Configuration setting is not correct.
+	LOCATION_ERROR_PARAMETER,				///< Input parameter is not correct.
+	LOCATION_ERROR_NOT_FOUND,				///< Output is not found.
+	LOCATION_ERROR_NOT_SUPPORTED,			///< Not supported.
+	LOCATION_ERROR_UNKNOWN,					///< Unknown error.
+	LOCATION_ERROR_SETTING_OFF,				///< Location service(GPS/WPS) is off in location settings.
+	LOCATION_ERROR_SECURITY_DENIED,			///< System disables location service.
 } LocationError;
 
 /**
@@ -61,21 +61,20 @@ typedef enum {
  */
 typedef enum
 {
-	LOCATION_METHOD_NONE = -1,   ///< Undefined method.
-	LOCATION_METHOD_HYBRID = 0,  ///< This method selects best method.
-	LOCATION_METHOD_GPS,         ///< This method uses Global Positioning System.
-	LOCATION_METHOD_WPS,         ///< This method uses Wifi Positioning System.
-	LOCATION_METHOD_CPS,         ///< This method uses cell ID of base station.
+	LOCATION_METHOD_NONE = -1,	///< Undefined method.
+	LOCATION_METHOD_HYBRID = 0,	///< This method selects best method.
+	LOCATION_METHOD_GPS,		///< This method uses Global Positioning System.
+	LOCATION_METHOD_WPS,		///< This method uses Wifi Positioning System.
 } LocationMethod;
 
 /**
  * @brief This represents the update type given by signal callback.
  */
 typedef enum {
-	UPDATE_TYPE_NONE = -1,  ///< Undefined update type.
-	POSITION_UPDATED = 0,   ///< This type is used when position information is updated.
-	VELOCITY_UPDATED,       ///< This type is used when velocity information is updated.
-	SATELLITE_UPDATED,		///< This type is used when satellite information is updated.
+	UPDATE_TYPE_NONE = -1,		///< Undefined update type.
+	POSITION_UPDATED = 0,		///< This type is used when position information is updated.
+	VELOCITY_UPDATED,			///< This type is used when velocity information is updated.
+	SATELLITE_UPDATED,			///< This type is used when satellite information is updated.
 } LocationUpdateType;
 
 /**
@@ -95,33 +94,40 @@ typedef GObject LocationObject;
 /**
  * @brief This represents position information such as latitude-longitude-altitude values and timestamp.
  */
-typedef struct _LocationPosition   LocationPosition;
+typedef struct _LocationPosition	LocationPosition;
 
 /**
  * @brief This represents last known position information such as latitude-longitude values and accuracy. \n
- * 		This would be deprecated soon.
+ *		This would be deprecated soon.
  */
-typedef struct _LocationLastPosition   LocationLastPosition;
+typedef struct _LocationLastPosition	LocationLastPosition;
+
+/**
+ * @brief This represents location batch information such as Position, Satellite and Accuracy.
+ */
+typedef struct _LocationBatch		LocationBatch;
 
 /**
  * @brief This represents position information such as number of satellites in used or in view.
  */
-typedef struct _LocationSatellite  LocationSatellite;
+typedef struct _LocationSatellite	LocationSatellite;
 
 /**
  * @brief This represents velocity information such as as speed, direction, climb.
  */
-typedef struct _LocationVelocity   LocationVelocity;
+typedef struct _LocationVelocity	LocationVelocity;
 
 /**
  * @brief This represents location accuracy information such as accuracy level, horizontal and vertical accuracy.
  */
-typedef struct _LocationAccuracy   LocationAccuracy;
+typedef struct _LocationAccuracy	LocationAccuracy;
 
 /**
  * @brief This represents boundary information such as rectangular or circle area.
  */
-typedef struct _LocationBoundary   LocationBoundary;
+typedef struct _LocationBoundary	LocationBoundary;
+
+typedef void (*LocationSettingCb) (LocationMethod method, gboolean enable, void *user_data);
 
 /**
  * @}@}

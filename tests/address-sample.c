@@ -19,7 +19,6 @@
  * limitations under the License.
  */
 
-#include <gconf/gconf-client.h>
 #include <location.h>
 #include <location-geocode.h>
 #include <location-map-service.h>
@@ -160,13 +159,13 @@ main (int argc, char *argv[])
 	LocationMapObject *loc = NULL;
 
 	// If application is executed by AUL, this is not needed.
-	g_setenv("PKG_NAME", "org.tizen.address-sample", 1);
+	g_setenv("PKG_NAME", "com.samsung.address-sample", 1);
 
 	g_type_init();
 	location_init ();
 	loop = g_main_loop_new (NULL, TRUE);
 
-	loc  = location_map_new (NULL);
+	loc = location_map_new (NULL);
 	if (!loc) {
 		g_warning("location_map_new failed");
 		return -1;

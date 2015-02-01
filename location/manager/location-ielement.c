@@ -50,8 +50,7 @@ location_ielement_get_type (void)
 			NULL /* base_finalize */
 		};
 
-		iface_type = g_type_register_static (G_TYPE_INTERFACE, "LocationIElement",
-	                                     &info, 0);
+		iface_type = g_type_register_static (G_TYPE_INTERFACE, "LocationIElement", &info, 0);
 	}
 
 	return iface_type;
@@ -71,6 +70,31 @@ location_ielement_stop (LocationIElement *self)
 	g_return_val_if_fail (LOCATION_IS_IELEMENT (self), LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self)->stop, LOCATION_ERROR_NOT_AVAILABLE);
 	return LOCATION_IELEMENT_GET_INTERFACE (self)->stop (self);
+}
+
+int
+location_ielement_start_batch (LocationIElement *self)
+{
+	g_return_val_if_fail (LOCATION_IS_IELEMENT (self), LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self)->start_batch, LOCATION_ERROR_NOT_AVAILABLE);
+	return LOCATION_IELEMENT_GET_INTERFACE (self)->start_batch (self);
+}
+
+int
+location_ielement_stop_batch (LocationIElement *self)
+{
+	g_return_val_if_fail (LOCATION_IS_IELEMENT (self), LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self)->stop_batch, LOCATION_ERROR_NOT_AVAILABLE);
+	return LOCATION_IELEMENT_GET_INTERFACE (self)->stop_batch (self);
+}
+
+int
+location_ielement_request_single_location (LocationIElement *self, int timeout)
+{
+	g_return_val_if_fail (LOCATION_IS_IELEMENT (self), LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self)->request_single_location, LOCATION_ERROR_NOT_AVAILABLE);
+
+	return LOCATION_IELEMENT_GET_INTERFACE (self)->request_single_location (self, timeout);
 }
 
 int
@@ -130,6 +154,16 @@ location_ielement_get_last_position_ext (LocationIElement *self,
 	return LOCATION_IELEMENT_GET_INTERFACE (self)->get_last_position_ext (self, position, velocity, accuracy);
 }
 
+
+int
+location_ielement_get_batch (LocationIElement *self, LocationBatch **batch)
+{
+	g_return_val_if_fail (LOCATION_IS_IELEMENT (self), LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (batch, LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self)->get_batch, LOCATION_ERROR_NOT_AVAILABLE);
+
+	return LOCATION_IELEMENT_GET_INTERFACE (self)->get_batch (self, batch);
+}
 
 int
 location_ielement_get_satellite (LocationIElement *self,
