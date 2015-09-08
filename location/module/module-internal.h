@@ -1,10 +1,10 @@
 /*
  * libslp-location
  *
- * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2010-2013 Samsung Electronics Co., Ltd. All rights reserved.
  *
- * Contact: Youngae Kang <youngae.kang@samsung.com>, Yunhan Kim <yhan.kim@samsung.com>,
- *          Genie Kim <daejins.kim@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ * Contact: Youngae Kang <youngae.kang@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ *          Genie Kim <daejins.kim@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,16 +36,16 @@ typedef struct{
 	char* path;
 } GMod;
 
-typedef struct{
+/*typedef struct{
 	GMod* gmod;
 	gpointer handler;
 	gpointer (*init)(LocModServiceOps* ops);
 	void (*shutdown)(gpointer handle);
 	LocModServiceOps ops;
-} LocationServiceMod;
+} LocationServiceMod;*/
 
 typedef struct{
-	GMod* gmod;	
+	GMod* gmod;
 	gpointer handler;
 	gpointer (*init)(LocModGpsOps* ops);
 	void (*shutdown)(gpointer handle);
@@ -53,20 +53,13 @@ typedef struct{
 } LocationGpsMod;
 
 typedef struct{
-	GMod* gmod;	
+	GMod* gmod;
 	gpointer handler;
 	gpointer (*init)(LocModWpsOps* ops);
 	void (*shutdown)(gpointer handle);
 	LocModWpsOps ops;
 } LocationWpsMod;
 
-typedef struct{
-	GMod* gmod;	
-	gpointer handler;
-	gpointer (*init)(LocModCpsOps* ops);
-	void (*shutdown)(gpointer handle);
-	LocModCpsOps ops;
-} LocationCpsMod;
 
 G_BEGIN_DECLS
 
@@ -75,7 +68,7 @@ gpointer module_new(const char* module_name);
 void module_free(gpointer mod, const char* module_name);
 gboolean module_is_supported(const char *module_name);
 gchar *mod_get_realpath(const gchar *module_name);
-	
+
 G_END_DECLS
 
 #endif

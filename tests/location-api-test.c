@@ -1,10 +1,10 @@
 /*
  * libslp-location
  *
- * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2010-2013 Samsung Electronics Co., Ltd. All rights reserved.
  *
- * Contact: Youngae Kang <youngae.kang@samsung.com>, Yunhan Kim <yhan.kim@samsung.com>,
- *          Genie Kim <daejins.kim@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ * Contact: Youngae Kang <youngae.kang@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ *          Genie Kim <daejins.kim@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 
 #include <glib.h>
 #include <string.h>
+#include <stdlib.h>
 #include <glib/gprintf.h>
 #include <location.h>
 #include "location-api-test-util.h"
@@ -70,6 +71,12 @@ static void GetLocationError(char str[STR_MAX], int ret)
 		case LOCATION_ERROR_UNKNOWN:
 			g_utf8_strncpy(str, "LOCATION_ERROR_UNKNOWN", STR_MAX);
 			break;
+		case LOCATION_ERROR_SETTING_OFF:
+			g_utf8_strncpy(str, "LOCATION_ERROR_SETTING_OFF", STR_MAX);
+			break;
+		case LOCATION_ERROR_SECURITY_DENIED:
+			g_utf8_strncpy(str, "LOCATION_ERROR_SECURITY_DENIED", STR_MAX);
+			break;
 		default:
 			g_utf8_strncpy(str, "Error: undefined error code", STR_MAX);
 	}
@@ -102,9 +109,6 @@ static void GetMethod(char str[STR_MAX], LocationMethod method)
 			break;
 		case LOCATION_METHOD_GPS:
 			g_utf8_strncpy(str, "LOCATION_METHOD_GPS", STR_MAX);
-			break;
-		case LOCATION_METHOD_CPS:
-			g_utf8_strncpy(str, "LOCATION_METHOD_CPS", STR_MAX);
 			break;
 		case LOCATION_METHOD_WPS:
 			g_utf8_strncpy(str, "LOCATION_METHOD_WPS", STR_MAX);
@@ -148,7 +152,11 @@ static void GetAccuracyLevel(char str[STR_MAX], LocationAccuracyLevel acc_level)
 static void SelectOpt(char* buf)
 {
 	int iLen = 0;
-	fgets(buf, 255, stdin);
+	char *str = NULL;
+	str = fgets(buf, 255, stdin);
+	if (NULL == str) {
+		g_printf("fgets return NULL. \n");
+	}
 	iLen = g_utf8_strlen(buf, -1);
 	buf[iLen-1] = '\0';
 }
@@ -157,7 +165,11 @@ static int PromptInt()
 {
 	char buf[255];
 	int ret;
-	fgets(buf, 255, stdin);
+	char *str = NULL;
+	str = fgets(buf, 255, stdin);
+	if (NULL == str) {
+		g_printf("fgets return NULL. \n");
+	}
 	buf[strlen(buf)-1]='\0';
 	ret = g_ascii_strtoll(buf, NULL, 10);
 	return ret;
@@ -214,19 +226,9 @@ static void PrintProperty (LocationObject* loc)
 	gchar method_str[STR_MAX] = {0, };
 	gchar status_str[STR_MAX] = {0, };
 
-	gchar* devname = NULL;
-
 	g_object_get(loc, "method", &method, NULL);
 	GetMethod(method_str, method);
 	g_printf("method[%s] ", method_str);
-
-	if (LOCATION_METHOD_GPS == method) {
-		g_object_get(loc, "dev-name", &devname, NULL);
-		if (devname) {
-			g_printf("dev-name[%s] ", devname);
-			g_free(devname);
-		}
-	}
 
 	int ret = location_get_last_position (loc, &pos, &acc);
 	if (ret == LOCATION_ERROR_NONE) {
@@ -236,7 +238,7 @@ static void PrintProperty (LocationObject* loc)
 		location_position_free (pos);
 		location_accuracy_free (acc);
 	}
-	
+
 	if (method == LOCATION_METHOD_HYBRID || method == LOCATION_METHOD_GPS) {
 		g_object_get(loc, "pos-interval", &pos_interval, NULL);
 		g_object_get(loc, "vel-interval", &vel_interval, NULL);
@@ -245,9 +247,6 @@ static void PrintProperty (LocationObject* loc)
 	else if (method == LOCATION_METHOD_WPS) {
 		g_object_get(loc, "pos-interval", &pos_interval, NULL);
 		g_object_get(loc, "vel-interval", &vel_interval, NULL);
-	}
-	else if (method == LOCATION_METHOD_CPS) {
-		g_object_get(loc, "pos-interval", &pos_interval, NULL);
 	}
 	g_printf("Position interval : [%u], Velocity interval [%u], Satellite interval [%u]\n", pos_interval, vel_interval, sat_interval);
 
@@ -259,7 +258,7 @@ static void PrintProperty (LocationObject* loc)
 	if (g_sig_zoneout) g_printf("[zone-out]");
 }
 
-static void cb_service_enabled (GObject *self, 	guint status, gpointer userdata)
+static void cb_service_enabled (GObject *self, guint status, gpointer userdata)
 {
 	g_printf("cb_service_enabled: status(%d) userdata(0x%x)", status, (unsigned int)userdata);
 
@@ -300,11 +299,10 @@ cb_service_disabled (GObject *self,
 
 static void
 cb_zone_in (GObject *self,
-	guint type,
+	gpointer boundary,
 	gpointer position,
 	gpointer accuracy)
 {
-	g_printf("cb_zone_in: type(%d)\n", type);
 	LocationPosition *pos = (LocationPosition*) position;
 	LocationAccuracy *acc = (LocationAccuracy*) accuracy;
 
@@ -316,11 +314,10 @@ cb_zone_in (GObject *self,
 
 static void
 cb_zone_out (GObject *self,
-	guint type,
+	gpointer boundary,
 	gpointer position,
 	gpointer accuracy)
 {
-	g_printf("cb_zone_out: type(%d)\n", type);
 	LocationPosition *pos = (LocationPosition*) position;
 	LocationAccuracy *acc = (LocationAccuracy*) accuracy;
 
@@ -397,12 +394,15 @@ static void print_menu()
 	g_printf("8a.  location_get_last_satellite\n");
 	g_printf("9.   location_get_distance\n");
 	g_printf("10.  location_is_supported_method\n");
-	g_printf("11.  location_is_enabled_gps\n");
 	g_printf("99.  location_send_command\n");
+#ifndef _TIZEN_PUBLIC_
+	g_printf("99a.  location_send_command(get_auth)\n");
+	g_printf("99b.  location_send_command(add_to_list)\n");
+#endif
 	g_printf("a?.  signals:(1)'service-enabled',(2)'service-disabled',(3)'service-updated',(4)'zone-in',(5)'zone-out'\n");
 	g_printf("b?.  disconnect signals:(1)'service-enabled',(2)'service-disabled',(3)'service-updated',(4)'zone-in',(5)'zone-out'\n");
-	g_printf("c?. (1)Set boundary, (2)Get boundary, (3) Remove boundary, (4) Remove all boundaries, (5)Set device name, \n");
-	g_printf("    (6)Set position interval (7) Set velocity interval (8) Set satellite interval\n");
+	g_printf("c?. (1)Set boundary, (2)Get boundary, (3) Remove boundary, (4) Remove all boundaries, \n");
+	g_printf("    (5)Set position interval (6) Set velocity interval (7) Set satellite interval\n");
 	g_printf("==================================== Property ====================================\n");
 	PrintProperty(location_obj);
 	g_printf("\n==================================================================================\n");
@@ -456,7 +456,7 @@ int main(int argc, char** argv)
 				g_printf("Location object already existed: [0x%x]", (unsigned int)location_obj);
 				continue;
 			}
-			g_printf("LOCATION_METHOD_HYBRID[0] LOCATION_METHOD_GPS[1] LOCATION_METHOD_WPS[2] LOCATION_METHOD_CPS[3]\n");
+			g_printf("LOCATION_METHOD_HYBRID[0] LOCATION_METHOD_GPS[1] LOCATION_METHOD_WPS[2]\n");
 			g_printf("Select Location Method: ");
 			LocationMethod method = PromptInt();
 			location_obj = location_new(method);
@@ -501,6 +501,7 @@ int main(int argc, char** argv)
 
 			ret = location_get_last_position (location_obj, &last_pos, &last_acc);
 			GetLocationError(str, ret);
+			g_printf("location_get_last_position: returned value [%s]\n", str);
 			if (ret == LOCATION_ERROR_NONE) {
 				g_printf ("SYNC>> Last position> time: %d, lat: %f, long: %f, alt: %f, status: %d",
 					last_pos->timestamp, last_pos->latitude, last_pos->longitude, last_pos->altitude, last_pos->status);
@@ -508,21 +509,18 @@ int main(int argc, char** argv)
 					last_acc->level, last_acc->horizontal_accuracy, last_acc->vertical_accuracy);
 				location_position_free(last_pos);
 				location_accuracy_free(last_acc);
-			} else g_warning ("SYNC>> Last position> failed. Error[%s]",str);
+			}
 
 		}else if(0 == g_strcmp0("7",strOpt) ){
 			LocationVelocity *vel = NULL;
 			LocationAccuracy *acc = NULL;
 			ret = location_get_velocity(location_obj, &vel, &acc);
+			GetLocationError(str, ret);
 			g_printf("location_get_velocity: returned value [%s]\n", str);
 			if (ret == LOCATION_ERROR_NONE) {
 				g_printf("time: [%d], speed: [%f], direction: [%f], climb: [%f]\n", vel->timestamp, vel->speed, vel->direction, vel->climb);
 				GetAccuracyLevel(str, acc->level);
 				g_printf("level: [%s], horizontal_accuracy: [%f], vertical_accuracy: [%f]\n", str, acc->horizontal_accuracy, acc->vertical_accuracy);
-			}
-			else {
-				GetLocationError(str, ret);
-				g_warning ("SYNC>> velocity> failed. Error[%s]", str);
 			}
 			if(vel) location_velocity_free(vel);
 			if(acc) location_accuracy_free(acc);
@@ -531,6 +529,7 @@ int main(int argc, char** argv)
 			LocationAccuracy *last_acc = NULL;
 			ret = location_get_last_velocity (location_obj, &last_vel, &last_acc);
 			GetLocationError(str, ret);
+			g_printf("location_get_last_velocity: returned value [%s]\n", str);
 			if (ret == LOCATION_ERROR_NONE) {
 				g_printf ("SYNC>> Last velocity> time: %d, speed: %f, direction:%f, climb:%f",
 					last_vel->timestamp, last_vel->speed, last_vel->direction, last_vel->climb);
@@ -538,7 +537,7 @@ int main(int argc, char** argv)
 					last_acc->level, last_acc->horizontal_accuracy, last_acc->vertical_accuracy);
 				location_velocity_free(last_vel);
 				location_accuracy_free(last_acc);
-			} else g_warning ("SYNC>> Last velocity> failed. Error[%s]", str);
+			}
 		}else if(0 == g_strcmp0("8",strOpt) ){
 			int ret = 0, idx = 0;
 			LocationSatellite *sat = NULL;
@@ -548,8 +547,9 @@ int main(int argc, char** argv)
 			guint azimuth;
 			gint snr;
 
-			ret =  location_get_satellite (location_obj, &sat);
+			ret = location_get_satellite (location_obj, &sat);
 			GetLocationError(str, ret);
+			g_printf("location_get_satellite: returned value [%s]\n", str);
 			if (ret == LOCATION_ERROR_NONE) {
 				g_printf ("SYNC>> Current Sattelite> time = %d, satellite in view = %d, satellite in used = %d", sat->timestamp, sat->num_of_sat_inview, sat->num_of_sat_used);
 				g_printf ("\tinview satellite information = ");
@@ -558,7 +558,7 @@ int main(int argc, char** argv)
 					g_printf ("\t\t[%02d] used: %d, prn: %d, elevation: %d, azimuth: %d, snr: %d", idx, used, prn, elevation, azimuth, snr);
 				}
 				location_satellite_free (sat);
-			} else g_warning ("SYNC>> Current satellite> failed. Error[%s]", str);
+			}
 		}else if(0 == g_strcmp0("8a",strOpt) ){
 			int ret = 0, idx = 0;
 			LocationSatellite *last_sat = NULL;
@@ -570,6 +570,7 @@ int main(int argc, char** argv)
 
 			ret = location_get_last_satellite (location_obj, &last_sat);
 			GetLocationError(str, ret);
+			g_printf("location_get_last_satellite: returned value [%s]\n", str);
 			if (ret == LOCATION_ERROR_NONE) {
 				g_printf ("SYNC>> Last Sattelite> time = %d, satellite in view = %d, satellite in used = %d", last_sat->timestamp, last_sat->num_of_sat_inview, last_sat->num_of_sat_used);
 				g_printf ("\tinview satellite information = ");
@@ -578,7 +579,7 @@ int main(int argc, char** argv)
 					g_printf ("\t\t[%02d] used: %d, prn: %d, elevation: %d, azimuth: %d, snr: %d", idx, used, prn, elevation, azimuth, snr);
 				}
 				location_satellite_free (last_sat);
-			} else g_warning ("SYNC>> Last satellite> failed. Error[%s]", str);
+			}
 		}else if(0 == g_strcmp0("9",strOpt) ) {
 
 			gulong distance;
@@ -604,12 +605,13 @@ int main(int argc, char** argv)
 		}else if(0 == g_strcmp0("10", strOpt)) {
 			int method;
 			char method_str[STR_MAX] = {0, };
+			char *str = NULL;
 			char input[8] = {0, };
 			gboolean is_supported = FALSE;
 
-			g_printf("0.Hybrid 1.GPS 2.WPS 3.CPS\n");
+			g_printf("0.Hybrid 1.GPS 2.WPS\n");
 			g_printf("Select Method :");
-			fgets(input, 8, stdin);
+			str = fgets(input, 8, stdin);
 			method = atoi(input);
 			switch(method) {
 				case LOCATION_METHOD_HYBRID:
@@ -623,11 +625,6 @@ int main(int argc, char** argv)
 				case LOCATION_METHOD_WPS:
 					is_supported = location_is_supported_method(LOCATION_METHOD_WPS);
 					break;
-
-				case LOCATION_METHOD_CPS:
-					is_supported = location_is_supported_method(LOCATION_METHOD_CPS);
-					break;
-
 				default:
 					break;
 
@@ -636,17 +633,32 @@ int main(int argc, char** argv)
 
 			g_printf("Method[%s] is %s.", method_str, is_supported ? "supported" : "not supported");
 
-		}else if(0 == g_strcmp0("11", strOpt)) {
-			gboolean is_enabled = FALSE;
-			is_enabled = location_is_enabled_gps(location_obj);
-			if(is_enabled == TRUE) g_printf("GPS is turned on");
-			else g_printf("GPS is turned off");
 		}else if(0 == g_strcmp0("99", strOpt)) {
 			int ret = 0;
-			const *str = "command";
+			const char *str = "command";
 			ret = location_send_command(str);
 			if(ret == 0)
 				g_printf("Success to send command[%s]", str);
+			else
+				g_printf("Fail to send command[%s]. Error[%d]", str, ret);
+#ifndef _TIZEN_PUBLIC_
+		}else if(0 == g_strcmp0("99a", strOpt)) {
+			int ret = 0;
+			const char *str = "GET_APP_AUTHORITY";
+			ret = location_send_command(str);
+			if(ret == 0)
+				g_printf("Success to send command[%s]", str);
+			else
+				g_printf("Fail to send command[%s]. Error[%d]", str, ret);
+		}else if(0 == g_strcmp0("99b", strOpt)) {
+			int ret = 0;
+			const char *str = "ADD_APPLIST";
+			ret = location_send_command(str);
+			if(ret == 0)
+				g_printf("Success to send command[%s]", str);
+			else
+				g_printf("Fail to send command[%s]. Error[%d]", str, ret);
+#endif
 		}else if(0 == g_strcmp0("a1",strOpt)){
 			if(location_obj && !g_sig_enable) {
 				g_sig_enable = g_signal_connect (location_obj, "service-enabled", G_CALLBACK(cb_service_enabled), location_obj);
@@ -795,28 +807,25 @@ int main(int argc, char** argv)
 
 		}else if(0 == g_strcmp0("c4",strOpt)){
 			location_boundary_foreach(location_obj, RemoveBoundary, location_obj);
-		}else if(0 == g_strcmp0("c5",strOpt)){
-			char buf[255];
-			g_printf("Input device name: ");
-			fgets(buf, 255, stdin);
-			buf[strlen(buf)-1]='\0';
-			g_object_set(location_obj, "dev-name", buf, NULL);
-		} else if (0 == g_strcmp0("c6", strOpt)) {
+		} else if (0 == g_strcmp0("c5", strOpt)) {
 			guint interval = 1;
+			int len = 0;
 			g_printf("Input interval[1~120]:");
-			scanf("%u", &interval);
+			len = scanf("%u", &interval);
 			g_printf("changed interval to [%u]\n", interval);
 			g_object_set(location_obj, "pos-interval", interval, NULL);
-		} else if (0 == g_strcmp0("c7", strOpt)) {
+		} else if (0 == g_strcmp0("c6", strOpt)) {
+			int len = 0;
 			guint interval = 1;
 			g_printf("Input interval[1~120]:");
-			scanf("%u", &interval);
+			len = scanf("%u", &interval);
 			g_printf("changed interval to [%u]\n", interval);
 			g_object_set(location_obj, "vel-interval", interval, NULL);
-		} else if (0 == g_strcmp0("c8", strOpt)) {
+		} else if (0 == g_strcmp0("c7", strOpt)) {
 			guint interval = 1;
+			int len = 0;
 			g_printf("Input interval[1~120]:");
-			scanf("%u", &interval);
+			len = scanf("%u", &interval);
 			g_printf("changed interval to [%u]\n", interval);
 			g_object_set(location_obj, "sat-interval", interval, NULL);
 		}else if(0 == g_strcmp0("q",strOpt) ){

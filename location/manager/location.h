@@ -1,10 +1,10 @@
 /*
  * libslp-location
  *
- * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2010-2013 Samsung Electronics Co., Ltd. All rights reserved.
  *
- * Contact: Youngae Kang <youngae.kang@samsung.com>, Yunhan Kim <yhan.kim@samsung.com>,
- *          Genie Kim <daejins.kim@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ * Contact: Youngae Kang <youngae.kang@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ *			Genie Kim <daejins.kim@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,9 @@
 #include <glib.h>
 #include <location-types.h>
 #include <location-position.h>
+#include <location-batch.h>
 #include <location-velocity.h>
 #include <location-accuracy.h>
-#include <location-address.h>
 #include <location-boundary.h>
 #include <location-satellite.h>
 
@@ -58,7 +58,7 @@ G_BEGIN_DECLS
  * @pre None.
  * @post None.
  * @return int
- * @retval 0                              Success
+ * @retval 0							Success
  *
  * Please refer #LocationError for more information.
  * @see None.
@@ -76,7 +76,7 @@ int location_init (void);
  * @param [in]
  * method - Location method to be used.
  * @return a new #LocationObject
- * @retval NULL              if error occured
+ * @retval NULL			if error occured
  * @see location_free
  */
 LocationObject *location_new (LocationMethod method);
@@ -91,7 +91,7 @@ LocationObject *location_new (LocationMethod method);
  * @param [in]
  * obj - a #LocationObject created by #location_new.
  * @return int
- * @retval 0                              Success.
+ * @retval 0							Success.
  *
  * Please refer #LocationError for more information.
  * @see location_new
@@ -102,7 +102,7 @@ int main (int argc, char *argv[])
 {
 	LocationObject *loc = NULL;
 	location_init ();
-	loc  = location_new (LOCATION_METHOD_GPS);
+	loc = location_new (LOCATION_METHOD_GPS);
 	if(!loc)
 		return -1;
 
@@ -127,7 +127,7 @@ int location_free (LocationObject *obj);
  * @param [in]
  * obj - a #LocationObject created by #location_new
  * @return int
- * @retval 0                              Success.
+ * @retval 0							Success.
  *
  * Please refer #LocationError for more information.
  * @see location_stop
@@ -177,10 +177,10 @@ static void cb_service_enabled (GObject *self, guint status, gpointer userdata)
 
 static void
 cb_service_updated (GObject *self,
-       guint type,
-       gpointer data,
-       gpointer accuracy,
-       gpointer userdata)
+		guint type,
+		gpointer data,
+		gpointer accuracy,
+		gpointer userdata)
 {
 	LocationAccuracy *acc = (LocationAccuracy*) accuracy;
 	switch (type) {
@@ -228,10 +228,10 @@ cb_service_updated (GObject *self,
 int main (int argc, char *argv[])
 {
 	LocationObject *loc = NULL;
-	int interval = 6; 	//seconds
+	int interval = 6;	//seconds
 	location_init ();
 
-	loc  = location_new (LOCATION_METHOD_GPS);
+	loc = location_new (LOCATION_METHOD_GPS);
 	if(!loc)
 		return -1;
 
@@ -242,7 +242,7 @@ int main (int argc, char *argv[])
 
 	location_start(loc);
 	loop = g_main_loop_new (NULL, TRUE);
-	g_main_loop_run (loop);  // GMainLoop is needed for receiving signals.
+	g_main_loop_run (loop); // GMainLoop is needed for receiving signals.
 
 	// ...
 	return 0;
@@ -263,7 +263,7 @@ int location_start (LocationObject *obj);
  * @param [in]
  * obj - a #LocationObject created by #location_new
  * @return int
- * @retval 0                              Success
+ * @retval 0							Success
  *
  * Please refer #LocationError for more information.
  * @see location_start
@@ -276,7 +276,7 @@ int main (int argc, char *argv[])
 {
 	LocationObject *loc = NULL;
 	location_init ();
-	loc  = location_new (LOCATION_METHOD_GPS);
+	loc = location_new (LOCATION_METHOD_GPS);
 	if(!loc)
 		return -1;
 
@@ -294,6 +294,8 @@ int main (int argc, char *argv[])
  */
 int location_stop (LocationObject *obj);
 
+int location_request_single_location(LocationObject *obj, int timeout);
+
 /**
  * @brief
  * Check wheither a method is available.
@@ -304,7 +306,7 @@ int location_stop (LocationObject *obj);
  * @param [in] method - a #LocationMethod
  * @return int
  * @retval True		Supported
- *	   False 	Not supported
+ *		False		Not supported
  * @par Example
  #include <location.h>
 static GMainLoop *loop = NULL;
@@ -327,38 +329,11 @@ int main (int argc, char *argv[])
  */
 gboolean location_is_supported_method(LocationMethod method);
 
-/**
- * @brief
- * Check wheither GPS is turned on or off.
- * @remarks
- * @pre
- * #location_init should be called before.\n
- * @post None.
- * @param [in] method - a #LocationMethod
- * @return int
- * @retval True		Turned on
- *	   False 	Turned off
- * @par Example
- #include <location.h>
-static GMainLoop *loop = NULL;
+int location_is_enabled_method(LocationMethod method, int *is_enabled);
 
-int main (int argc, char *argv[])
-{
-	gboolean is_enabled = FALSE;
+int location_enable_method(const LocationMethod method, const int enable);
 
-	// ....
 
-	is_enabled = location_is_enabled_gps(loc);
-	if(is_enable == TRUE)
-		g_printf("GPS is turned on.\n");
-	else
-		g_printf("GPS is turned off.\n");
-
-	return 0;
-}* @code
- * @endcode
- */
-gboolean location_is_enabled_gps(LocationObject *obj);
 
 /**
  * @brief
@@ -375,7 +350,7 @@ gboolean location_is_enabled_gps(LocationObject *obj);
  * @param [out]
  * accuracy - a new #LocationAccuracy
  * @return int
- * @retval 0                              Success
+ * @retval 0							Success
  *
  * Please refer #LocationError for more information.
  * @see location_get_velocity
@@ -410,7 +385,7 @@ int main (int argc, char *argv[])
 
 	location_init ();
 	loop = g_main_loop_new (NULL, TRUE);
-	loc  = location_new (LOCATION_METHOD_GPS);
+	loc = location_new (LOCATION_METHOD_GPS);
 	if(!loc){
 		g_debug("location_new failed");
 		return -1;
@@ -428,24 +403,90 @@ int main (int argc, char *argv[])
 }
  * @endcode
  */
-int location_get_position (LocationObject *obj, LocationPosition **position,	LocationAccuracy **accuracy);
+int location_get_position (LocationObject *obj, LocationPosition **position, LocationAccuracy **accuracy);
+
+/**
+ * @brief
+ * Get current position & velocity information with estimate of the accuracy.
+ * @remarks Out parameters are should be freed.
+ * @pre
+ * #location_init should be called before.\n
+ * #location_start should be called before.
+ * @post None.
+ * @param [in] obj - a #LocationObject created by #location_new
+ * @param [out] position - a new #LocationPosition
+ * @param [out] velocity - a new #LocationVelocity
+ * @param [out] accuracy - a new #LocationAccuracy
+ * @return int
+ * @retval 0							Success
+ *
+ * Please refer #LocationError for more information.
+ * @see location_get_position
+ * @par Example
+ * @code
+#include <location.h>
+static GMainLoop *loop = NULL;
+
+static void cb_service_enabled (GObject *self, guint status, gpointer userdata)
+{
+	g_debug("cb_service_enabled: status(%d) userdata(0x%x)", status, (unsigned int)userdata);
+
+	LocationObject *loc = (LocationObject*)userdata;
+
+	LocationPosition *pos = NULL;
+	LocationVelocity *vel = NULL;
+	LocationAccuracy *acc = NULL;
+
+	// This function works properly after service is enabled.
+	if (LOCATION_ERROR_NONE == location_get_position_ext (loc, &pos, &vel, &acc)) {
+		g_debug ("SYNC>> Current position> time: %d, lat: %f, long: %f, alt: %f, status: %d, speed: %f, direction: %f",
+			pos->timestamp, pos->latitude, pos->longitude, pos->altitude, pos->status, vel->speed, vel->direction);
+		g_debug ("\tAccuracy level %d (%.0f meters %.0f meters)",
+			acc->level, acc->horizontal_accuracy, acc->vertical_accuracy);
+		location_position_free(pos);
+		location_accuracy_free(acc);
+	} else g_warning ("SYNC>> Current position_ext > failed");
+}
+
+int main (int argc, char *argv[])
+{
+	LocationObject *loc = NULL;
+	gulong handler_id = 0;
+
+	location_init ();
+	loop = g_main_loop_new (NULL, TRUE);
+	loc = location_new (LOCATION_METHOD_GPS);
+	if(!loc){
+		g_debug("location_new failed");
+		return -1;
+	}
+
+	handler_id = g_signal_connect (loc, "service-enabled", G_CALLBACK(cb_service_enabled), loc);
+	location_start (loc);
+	g_main_loop_run (loop);
+
+	g_signal_handler_disconnect(loc, handler_id);
+	location_stop (loc);
+	location_free (loc);
+
+	return 0;
+}
+ * @endcode
+ */
+int location_get_position_ext (LocationObject *obj, LocationPosition **position, LocationVelocity **velocity, LocationAccuracy **accuracy);
 
 /**
  * @brief
  * Get last position information with estimate of the accuracy.
- * @remarks This API is not implemented now. \n
- *   Out parameters are should be freed.
- * @pre
- * #location_init should be called before.
+ * @remarks Out parameters are should be freed.
+ * @pre #location_init should be called before.
  * @post None.
  * @param [in]
  * obj - a #LocationObject created by #location_new
- * @param [out]
- * position - a new #LocationPosition
- * @param [out]
- * accuracy - a new #LocationAccuracy
+ * @param [out] position - a new #LocationPosition
+ * @param [out] accuracy - a new #LocationAccuracy
  * @return int
- * @retval 0                              Success
+ * @retval 0							Success
  *
  * Please refer #LocationError for more information.
  * @see location_get_position
@@ -461,7 +502,7 @@ int main (int argc, char *argv[])
 	LocationAccuracy *last_acc = NULL;
 
 	location_init ();
-	loc  = location_new (LOCATION_METHOD_GPS);
+	loc = location_new (LOCATION_METHOD_GPS);
 	if(!loc){
 		g_debug("location_new failed");
 		return -1;
@@ -486,9 +527,60 @@ int location_get_last_position (LocationObject *obj, LocationPosition **position
 
 /**
  * @brief
+ * Get last position & velocity information with estimate of the accuracy.
+ * @remarks Out parameters are should be freed.
+ * @pre #location_init should be called before.
+ * @post None.
+ * @param [in] obj - a #LocationObject created by #location_new
+ * @param [out] position - a new #LocationPosition
+ * @param [out] velocity - a new #LocationVelocity
+ * @param [out] accuracy - a new #LocationAccuracy
+ * @return int
+ * @retval 0							Success
+ *
+ * Please refer #LocationError for more information.
+ * @see location_get_position_ext
+ * @par Example
+ * @code
+#include <location.h>
+
+int main (int argc, char *argv[])
+{
+	LocationObject *loc = NULL;
+	int ret = 0;
+	LocationPosition *last_pos = NULL;
+	LocationVelocity *last_vel = NULL;
+	LocationAccuracy *last_acc = NULL;
+
+	location_init ();
+	loc = location_new (LOCATION_METHOD_GPS);
+	if(!loc){
+		g_debug("location_new failed");
+		return -1;
+	}
+
+	if (LOCATION_ERROR_NONE == location_get_last_position_ext (loc, &last_pos, &last_vel, &last_acc)) {
+		g_debug ("SYNC>> Last position> time: %d, lat: %f, long: %f, alt: %f, status: %d, speed: %f, direction: %f",
+			last_pos->timestamp, last_pos->latitude, last_pos->longitude, last_pos->altitude, last_pos->status, last_vel->speed, last_vel->direction);
+		g_debug ("\tAccuracy level %d (%.0f meters %.0f meters)",
+			last_acc->level, last_acc->horizontal_accuracy, last_acc->vertical_accuracy);
+		location_position_free(last_pos);
+		location_velocity_free(last_vel);
+		location_accuracy_free(last_acc);
+	} else g_warning ("SYNC>> Last position_ext > failed");
+
+	location_free (loc);
+
+	return 0;
+}
+ * @endcode
+ */
+int location_get_last_position_ext (LocationObject *obj, LocationPosition **position, LocationVelocity **velocity, LocationAccuracy **accuracy);
+/**
+ * @brief
  * Get last satellite information.
  * @remarks This API is not implemented now. \n
- *   Out parameters are should be freed.
+ *	Out parameters are should be freed.
  * @pre
  * #location_init should be called before.
  * @post None.
@@ -496,7 +588,7 @@ int location_get_last_position (LocationObject *obj, LocationPosition **position
  * obj - a #LocationObject created by #location_new
  * @param [out] satellite - a new #LocationSatellite
  * @return int
- * @retval 0                              Success
+ * @retval 0							Success
  * Please refer #LocationError for more information.
  * @see location_get_last_satellite
  * @par Example
@@ -515,7 +607,7 @@ int main (int argc, char *argv[])
 	gint snr;
 
 	location_init ();
-	loc  = location_new (LOCATION_METHOD_GPS);
+	loc = location_new (LOCATION_METHOD_GPS);
 	if(!loc){
 		g_debug("location_new failed");
 		return -1;
@@ -539,11 +631,19 @@ int main (int argc, char *argv[])
  */
 int location_get_satellite (LocationObject *obj, LocationSatellite **satellite);
 
+
+int location_start_batch (LocationObject *obj);
+
+int location_stop_batch (LocationObject *obj);
+
+int location_get_batch (LocationObject *obj, LocationBatch **batch);
+
+
 /**
  * @brief
  * Get last satellite information.
  * @remarks This API is not implemented now. \n
- *   Out parameters are should be freed.
+ *	Out parameters are should be freed.
  * @pre
  * #location_init should be called before.
  * @post None.
@@ -552,7 +652,7 @@ int location_get_satellite (LocationObject *obj, LocationSatellite **satellite);
  * @param [out]
  * satellite - a new #LocationSatellite
  * @return int
- * @retval 0                              Success
+ * @retval 0							Success
  *
  * Please refer #LocationError for more information.
  * @par Example
@@ -571,7 +671,7 @@ int main (int argc, char *argv[])
 	gint snr;
 
 	location_init ();
-	loc  = location_new (LOCATION_METHOD_GPS);
+	loc = location_new (LOCATION_METHOD_GPS);
 	if(!loc){
 		g_debug("location_new failed");
 		return -1;
@@ -610,7 +710,7 @@ int location_get_last_satellite (LocationObject *obj, LocationSatellite **satell
  * @param [out]
  * accuracy - a new #LocationAccuracy
  * @return int
- * @retval 0                              Success
+ * @retval 0							Success
  *
  * Please refer #LocationError for more information.
  * @see location_get_position
@@ -645,7 +745,7 @@ int main (int argc, char *argv[])
 
 	loop = g_main_loop_new (NULL, TRUE);
 
-	loc  = location_new (LOCATION_METHOD_GPS);
+	loc = location_new (LOCATION_METHOD_GPS);
 	if(!loc){
 		g_debug("location_new failed");
 		return -1;
@@ -680,7 +780,7 @@ int location_get_velocity (LocationObject *obj, LocationVelocity **velocity, Loc
  * @param [out]
  * accuracy - a new #LocationAccuracy
  * @return int
- * @retval 0                              Success
+ * @retval 0							Success
  *
  * Please refer #LocationError for more information.
  * @see location_get_position
@@ -698,7 +798,7 @@ int main (int argc, char *argv[])
 
 	location_init ();
 
-	loc  = location_new (LOCATION_METHOD_GPS);
+	loc = location_new (LOCATION_METHOD_GPS);
 	if(!loc){
 		g_debug("location_new failed");
 		return -1;
@@ -723,20 +823,57 @@ int location_get_last_velocity (LocationObject *obj, LocationVelocity **velocity
 
 /**
  * @brief
+ * Get the accessibility state of an application
+ * @remarks None.
+ * @pre
+ * #location_init should be called before.\n
+ * @post None.
+ * @param [out] state - a #LocationAccessState
+ * @return int
+ * @retval 0							Success
+ *
+ * Please refer #LocationError for more information.
+ */
+int location_get_accessibility_state (LocationAccessState *state);
+
+/**
+ * @brief
  * Send command to the server.
- * @remarks This functions is not implemneted yet.
  * @pre
  * #location_init should be called before.\n
  * Calling application must have glib or ecore main loop.\n
  * Calling application must have an active data connection.
  * @post None.
- * @param [in]  cmd - a #char
+ * @param [in] cmd - a #char
  * @return int
- * @retval 0                              Success
+ * @retval 0							Success
  *
  * Please refer #LocationError for more information.
  */
 int location_send_command(const char *cmd);
+
+/**
+ * @brief
+ * Set option of server.
+ * @pre
+ * #location_init should be called before.\n
+ * Calling application must have glib or ecore main loop.\n
+ * Calling application must have an active data connection.
+ * @post None.
+ * @param [in]	obj - a #LocationObject created by #location_new
+ * @param [in]	option - a #char
+ * @return int
+ * @retval 0							Success
+ *
+ * Please refer #LocationError for more information.
+ */
+int location_set_option(LocationObject *obj, const char *option);
+
+int location_add_setting_notify(LocationMethod method, LocationSettingCb callback, void *user_data);
+
+int location_ignore_setting_notify(LocationMethod method, LocationSettingCb callback );
+
+
 
 /**
  * @} @}

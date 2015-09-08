@@ -1,10 +1,10 @@
 /*
  * libslp-location
  *
- * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2010-2013 Samsung Electronics Co., Ltd. All rights reserved.
  *
- * Contact: Youngae Kang <youngae.kang@samsung.com>, Yunhan Kim <yhan.kim@samsung.com>,
- *          Genie Kim <daejins.kim@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ * Contact: Youngae Kang <youngae.kang@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ *			Genie Kim <daejins.kim@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,13 +47,13 @@ GType location_accuracy_get_type(void);
  * @brief This represents the approximate accuracy level of given information.
  */
 typedef enum {
-	LOCATION_ACCURACY_LEVEL_NONE = 0,    ///< Invalid data.
-	LOCATION_ACCURACY_LEVEL_COUNTRY,     ///< Country accuracy level->
-	LOCATION_ACCURACY_LEVEL_REGION,      ///< Regional accuracy level->
-	LOCATION_ACCURACY_LEVEL_LOCALITY,    ///< Local accuracy level->
-	LOCATION_ACCURACY_LEVEL_POSTALCODE,  ///< Postal accuracy level->
-	LOCATION_ACCURACY_LEVEL_STREET,      ///< Street accuracy level->
-	LOCATION_ACCURACY_LEVEL_DETAILED,    ///< Detailed accuracy level->
+	LOCATION_ACCURACY_LEVEL_NONE = 0,	///< Invalid data.
+	LOCATION_ACCURACY_LEVEL_COUNTRY,	///< Country accuracy level->
+	LOCATION_ACCURACY_LEVEL_REGION,		///< Regional accuracy level->
+	LOCATION_ACCURACY_LEVEL_LOCALITY,	///< Local accuracy level->
+	LOCATION_ACCURACY_LEVEL_POSTALCODE,	///< Postal accuracy level->
+	LOCATION_ACCURACY_LEVEL_STREET,		///< Street accuracy level->
+	LOCATION_ACCURACY_LEVEL_DETAILED,	///< Detailed accuracy level->
 } LocationAccuracyLevel;
 
 /**
@@ -61,41 +61,41 @@ typedef enum {
  */
 struct _LocationAccuracy
 {
-	LocationAccuracyLevel level;        ///< The accuracy level of the location information.
-	gdouble horizontal_accuracy;        ///< The horizontal position uncertainty  of the location in meters.
-	gdouble vertical_accuracy;          ///< The vertical position uncertainty of the location in meters.
+	LocationAccuracyLevel level;		///< The accuracy level of the location information.
+	gdouble horizontal_accuracy;		///< The horizontal position uncertainty of the location in meters.
+	gdouble vertical_accuracy;			///< The vertical position uncertainty of the location in meters.
 };
 
 /**
- * @brief   Create a new #LocationAccuracy with  given information.
+ * @brief	Create a new #LocationAccuracy with given information.
  * @remarks None.
- * @pre     #location_init should be called before.\n
- * @post    None.
- * @param [in]  level - The accuracy level of the location information.
- * @param [in]  horizontal_accuracy - The horizontal position uncertainty  of the location in meters.
- * @param [in]  vertical_accuracy - The vertical position uncertainty of the location in meters.
+ * @pre	 #location_init should be called before.\n
+ * @post	None.
+ * @param [in] level - The accuracy level of the location information.
+ * @param [in] horizontal_accuracy - The horizontal position uncertainty of the location in meters.
+ * @param [in] vertical_accuracy - The vertical position uncertainty of the location in meters.
  * @return a new #LocationAccuracy
  * @retval NULL if error occured
  */
 LocationAccuracy *location_accuracy_new (LocationAccuracyLevel level, gdouble horizontal_accuracy, gdouble vertical_accuracy);
 
 /**
- * @brief   Free a #LocationAccuracy.
+ * @brief	Free a #LocationAccuracy.
  * @remarks None.
- * @pre     #location_init should be called before.\n
- * @post    None.
+ * @pre	 #location_init should be called before.\n
+ * @post	None.
  * @param [in] accuracy - a #LocationAccuracy.
  * @return None.
  */
 void location_accuracy_free (LocationAccuracy *accuracy);
 
 /**
- * @brief   Compare for two accuracys.
+ * @brief	Compare for two accuracys.
  * @remarks None.
- * @pre     #location_init should be called before.\n
- * @post    None.
- * @param [in]  accuracy1 - a #LocationAccuracy
- * @param [in]  accuracy2 - another #LocationAccuracy
+ * @pre	 #location_init should be called before.\n
+ * @post	None.
+ * @param [in] accuracy1 - a #LocationAccuracy
+ * @param [in] accuracy2 - another #LocationAccuracy
  * @return integer
  * @retval\n
  * 0 - if the accuracy match\n
@@ -105,12 +105,12 @@ void location_accuracy_free (LocationAccuracy *accuracy);
 int location_accuracy_compare (const LocationAccuracy *accuracy1, const LocationAccuracy *accuracy2);
 
 /**
- * @brief   Compare for two accuracys' level.
+ * @brief	Compare for two accuracys' level.
  * @remarks None.
- * @pre     #location_init should be called before.\n
- * @post    None.
- * @param [in]  accuracy1 - a #LocationAccuracy
- * @param [in]  accuracy2 - another #LocationAccuracy
+ * @pre	 #location_init should be called before.\n
+ * @post	None.
+ * @param [in] accuracy1 - a #LocationAccuracy
+ * @param [in] accuracy2 - another #LocationAccuracy
  * @return integer
  * @retval\n
  * 0 - if the accuracy match\n
@@ -120,11 +120,11 @@ int location_accuracy_compare (const LocationAccuracy *accuracy1, const Location
 int location_accuracy_level_compare(const LocationAccuracy *accuracy1, const LocationAccuracy *accuracy2);
 
 /**
- * @brief   Makes a copy of #LocationAccuracy
+ * @brief	Makes a copy of #LocationAccuracy
  * @remarks None.
- * @pre     #location_init should be called before.\n
- * @post    None.
- * @param [in]  accuracy - a #LocationAccuracy
+ * @pre	 #location_init should be called before.\n
+ * @post	None.
+ * @param [in] accuracy - a #LocationAccuracy
  * @return a new #LocationAccuracy
  * @retval NULL if error occured
  */

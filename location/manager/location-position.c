@@ -1,10 +1,10 @@
 /*
  * libslp-location
  *
- * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2010-2013 Samsung Electronics Co., Ltd. All rights reserved.
  *
- * Contact: Youngae Kang <youngae.kang@samsung.com>, Yunhan Kim <yhan.kim@samsung.com>,
- *          Genie Kim <daejins.kim@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ * Contact: Youngae Kang <youngae.kang@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ *          Genie Kim <daejins.kim@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,8 @@ location_position_new (guint timestamp,
 	if (longitude < -180 || longitude > 180) return NULL;
 
 	LocationPosition* position = g_slice_new0(LocationPosition);
+	g_return_val_if_fail(position, NULL);
+
 	position->timestamp = timestamp;
 	position->latitude = latitude;
 	position->longitude = longitude;
@@ -104,7 +106,7 @@ location_position_copy (const LocationPosition *position)
 }
 
 /* Vincenty formula. WGS-84 */
-EXPORT_API	int
+EXPORT_API int
 location_get_distance(const LocationPosition *pos1, const LocationPosition *pos2, gulong *distance)
 {
 	g_return_val_if_fail(pos1, LOCATION_ERROR_PARAMETER);
@@ -113,7 +115,7 @@ location_get_distance(const LocationPosition *pos1, const LocationPosition *pos2
 
 	*distance = 0;
 
-	const double a = 6378137.0, b = 6356752.314245,  f = 1/298.257223563;
+	const double a = 6378137.0, b = 6356752.314245, f = 1/298.257223563;
 	double delta_lon = DEG2RAD(pos2->longitude-pos1->longitude);
 	double u_1 = atan((1-f) * tan(DEG2RAD(pos1->latitude)));
 	double u_2 = atan((1-f) * tan(DEG2RAD(pos2->latitude)));
@@ -121,7 +123,7 @@ location_get_distance(const LocationPosition *pos1, const LocationPosition *pos2
 	double lambdaP, iter_limit = 100.0;
 	double lambda = delta_lon;
 
-	double sin_sigma, sin_alpha, cos_sigma, sigma,  sq_cos_alpha, cos_2sigma, C;
+	double sin_sigma, sin_alpha, cos_sigma, sigma, sq_cos_alpha, cos_2sigma, C;
 	double sq_u, cal1, cal2, delta_sigma, cal_dist;
 	double sin_lambda, cos_lambda;
 
@@ -139,7 +141,7 @@ location_get_distance(const LocationPosition *pos1, const LocationPosition *pos2
 			(cos_u1*sin_u2-sin_u1*cos_u2*cos_lambda));
 
 		if (sin_sigma ==0)
-			return LOCATION_ERROR_NONE;  // co-incident points
+			return LOCATION_ERROR_NONE;	// co-incident points
 
 		cos_sigma = sin_u1*sin_u2 + cos_u1*cos_u2*cos_lambda;
 		sigma = atan2(sin_sigma, cos_sigma);

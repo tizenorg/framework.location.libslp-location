@@ -1,10 +1,10 @@
 /*
  * libslp-location
  *
- * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2010-2013 Samsung Electronics Co., Ltd. All rights reserved.
  *
- * Contact: Youngae Kang <youngae.kang@samsung.com>, Yunhan Kim <yhan.kim@samsung.com>,
- *          Genie Kim <daejins.kim@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ * Contact: Youngae Kang <youngae.kang@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ *          Genie Kim <daejins.kim@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,8 +50,7 @@ location_ielement_get_type (void)
 			NULL /* base_finalize */
 		};
 
-		iface_type = g_type_register_static (G_TYPE_INTERFACE, "LocationIElement",
-	                                     &info, 0);
+		iface_type = g_type_register_static (G_TYPE_INTERFACE, "LocationIElement", &info, 0);
 	}
 
 	return iface_type;
@@ -61,6 +60,7 @@ int
 location_ielement_start (LocationIElement *self)
 {
 	g_return_val_if_fail (LOCATION_IS_IELEMENT (self), LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self), LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self)->start, LOCATION_ERROR_NOT_AVAILABLE);
 	return LOCATION_IELEMENT_GET_INTERFACE (self)->start (self);
 }
@@ -69,8 +69,37 @@ int
 location_ielement_stop (LocationIElement *self)
 {
 	g_return_val_if_fail (LOCATION_IS_IELEMENT (self), LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self), LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self)->stop, LOCATION_ERROR_NOT_AVAILABLE);
 	return LOCATION_IELEMENT_GET_INTERFACE (self)->stop (self);
+}
+
+int
+location_ielement_start_batch (LocationIElement *self)
+{
+	g_return_val_if_fail (LOCATION_IS_IELEMENT (self), LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self), LOCATION_ERROR_NOT_AVAILABLE);
+	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self)->start_batch, LOCATION_ERROR_NOT_AVAILABLE);
+	return LOCATION_IELEMENT_GET_INTERFACE (self)->start_batch (self);
+}
+
+int
+location_ielement_stop_batch (LocationIElement *self)
+{
+	g_return_val_if_fail (LOCATION_IS_IELEMENT (self), LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self), LOCATION_ERROR_NOT_AVAILABLE);
+	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self)->stop_batch, LOCATION_ERROR_NOT_AVAILABLE);
+	return LOCATION_IELEMENT_GET_INTERFACE (self)->stop_batch (self);
+}
+
+int
+location_ielement_request_single_location (LocationIElement *self, int timeout)
+{
+	g_return_val_if_fail (LOCATION_IS_IELEMENT (self), LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self), LOCATION_ERROR_NOT_AVAILABLE);
+	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self)->request_single_location, LOCATION_ERROR_NOT_AVAILABLE);
+
+	return LOCATION_IELEMENT_GET_INTERFACE (self)->request_single_location (self, timeout);
 }
 
 int
@@ -81,10 +110,28 @@ location_ielement_get_position (LocationIElement *self,
 	g_return_val_if_fail (LOCATION_IS_IELEMENT (self), LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail (position, LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail (accuracy, LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self), LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self)->get_position, LOCATION_ERROR_NOT_AVAILABLE);
 
 	return LOCATION_IELEMENT_GET_INTERFACE (self)->get_position (self, position, accuracy);
 }
+
+int
+location_ielement_get_position_ext (LocationIElement *self,
+	LocationPosition **position,
+	LocationVelocity **velocity,
+	LocationAccuracy **accuracy)
+{
+	g_return_val_if_fail (LOCATION_IS_IELEMENT (self), LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (position, LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (velocity, LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (accuracy, LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self), LOCATION_ERROR_NOT_AVAILABLE);
+	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self)->get_position_ext, LOCATION_ERROR_NOT_AVAILABLE);
+
+	return LOCATION_IELEMENT_GET_INTERFACE (self)->get_position_ext (self, position, velocity, accuracy);
+}
+
 
 int
 location_ielement_get_last_position (LocationIElement *self,
@@ -94,9 +141,38 @@ location_ielement_get_last_position (LocationIElement *self,
 	g_return_val_if_fail (LOCATION_IS_IELEMENT (self), LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail (position, LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail (accuracy, LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self), LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self)->get_last_position, LOCATION_ERROR_NOT_AVAILABLE);
 
 	return LOCATION_IELEMENT_GET_INTERFACE (self)->get_last_position (self, position, accuracy);
+}
+
+int
+location_ielement_get_last_position_ext (LocationIElement *self,
+	LocationPosition **position,
+	LocationVelocity **velocity,
+	LocationAccuracy **accuracy)
+{
+	g_return_val_if_fail (LOCATION_IS_IELEMENT (self), LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (position, LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (velocity, LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (accuracy, LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self), LOCATION_ERROR_NOT_AVAILABLE);
+	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self)->get_last_position_ext, LOCATION_ERROR_NOT_AVAILABLE);
+
+	return LOCATION_IELEMENT_GET_INTERFACE (self)->get_last_position_ext (self, position, velocity, accuracy);
+}
+
+
+int
+location_ielement_get_batch (LocationIElement *self, LocationBatch **batch)
+{
+	g_return_val_if_fail (LOCATION_IS_IELEMENT (self), LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (batch, LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self), LOCATION_ERROR_NOT_AVAILABLE);
+	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self)->get_batch, LOCATION_ERROR_NOT_AVAILABLE);
+
+	return LOCATION_IELEMENT_GET_INTERFACE (self)->get_batch (self, batch);
 }
 
 int
@@ -105,6 +181,7 @@ location_ielement_get_satellite (LocationIElement *self,
 {
 	g_return_val_if_fail (LOCATION_IS_IELEMENT (self), LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail (satellite, LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self), LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self)->get_satellite, LOCATION_ERROR_NOT_AVAILABLE);
 
 	return LOCATION_IELEMENT_GET_INTERFACE (self)->get_satellite (self, satellite);
@@ -116,6 +193,7 @@ location_ielement_get_last_satellite (LocationIElement *self,
 {
 	g_return_val_if_fail (LOCATION_IS_IELEMENT (self), LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail (satellite, LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self), LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self)->get_last_satellite, LOCATION_ERROR_NOT_AVAILABLE);
 
 	return LOCATION_IELEMENT_GET_INTERFACE (self)->get_last_satellite (self, satellite);
@@ -129,6 +207,7 @@ location_ielement_get_velocity (LocationIElement *self,
 {
 	g_return_val_if_fail (LOCATION_IS_IELEMENT (self), LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail (velocity, LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self), LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self)->get_velocity, LOCATION_ERROR_NOT_AVAILABLE);
 	return LOCATION_IELEMENT_GET_INTERFACE (self)->get_velocity (self, velocity, accuracy);
 }
@@ -140,6 +219,15 @@ location_ielement_get_last_velocity (LocationIElement *self,
 {
 	g_return_val_if_fail (LOCATION_IS_IELEMENT (self), LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail (velocity, LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self), LOCATION_ERROR_NOT_AVAILABLE);
 	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self)->get_last_velocity, LOCATION_ERROR_NOT_AVAILABLE);
 	return LOCATION_IELEMENT_GET_INTERFACE (self)->get_last_velocity (self, velocity, accuracy);
+}
+
+int
+location_ielement_set_option (LocationIElement *self, const char *option)
+{
+	g_return_val_if_fail (LOCATION_IS_IELEMENT (self), LOCATION_ERROR_PARAMETER);
+	g_return_val_if_fail (LOCATION_IELEMENT_GET_INTERFACE (self), LOCATION_ERROR_NOT_AVAILABLE);
+	return LOCATION_IELEMENT_GET_INTERFACE (self)->set_option (self, option);
 }

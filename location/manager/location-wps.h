@@ -1,10 +1,10 @@
 /*
  * libslp-location
  *
- * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2010-2013 Samsung Electronics Co., Ltd. All rights reserved.
  *
- * Contact: Youngae Kang <youngae.kang@samsung.com>, Yunhan Kim <yhan.kim@samsung.com>,
- *          Genie Kim <daejins.kim@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ * Contact: Youngae Kang <youngae.kang@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ *			Genie Kim <daejins.kim@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,15 +31,15 @@
 
 G_BEGIN_DECLS
 
-#define LOCATION_TYPE_WPS                  (location_wps_get_type ())
-#define LOCATION_WPS(obj)                  (G_TYPE_CHECK_INSTANCE_CAST ((obj), LOCATION_TYPE_WPS, LocationWps))
-#define LOCATION_IS_WPS(obj)               (G_TYPE_CHECK_INSTANCE_TYPE ((obj), LOCATION_TYPE_WPS))
-#define LOCATION_WPS_CLASS(klass)          (G_TYPE_CHECK_CLASS_CAST ((klass), LOCATION_TYPE_WPS, LocationWpsClass))
-#define LOCATION_IS_WPS_CLASS(klass)       (G_TYPE_CHECK_CLASS_TYPE ((klass), LOCATION_TYPE_WPS))
-#define LOCATION_WPS_GET_CLASS(obj)        (G_TYPE_INSTANCE_GET_CLASS ((obj), LOCATION_TYPE_WPS, LocationWpsClass))
+#define LOCATION_TYPE_WPS				(location_wps_get_type ())
+#define LOCATION_WPS(obj)				(G_TYPE_CHECK_INSTANCE_CAST ((obj), LOCATION_TYPE_WPS, LocationWps))
+#define LOCATION_IS_WPS(obj)			(G_TYPE_CHECK_INSTANCE_TYPE ((obj), LOCATION_TYPE_WPS))
+#define LOCATION_WPS_CLASS(klass)		(G_TYPE_CHECK_CLASS_CAST ((klass), LOCATION_TYPE_WPS, LocationWpsClass))
+#define LOCATION_IS_WPS_CLASS(klass)	(G_TYPE_CHECK_CLASS_TYPE ((klass), LOCATION_TYPE_WPS))
+#define LOCATION_WPS_GET_CLASS(obj)		(G_TYPE_INSTANCE_GET_CLASS ((obj), LOCATION_TYPE_WPS, LocationWpsClass))
 
-typedef struct _LocationWps        LocationWps;
-typedef struct _LocationWpsClass   LocationWpsClass;
+typedef struct _LocationWps			LocationWps;
+typedef struct _LocationWpsClass	LocationWpsClass;
 
 struct _LocationWps
 {
@@ -52,9 +52,10 @@ struct _LocationWpsClass
 
 	void (* enabled) (guint type);
 	void (* disabled) (guint type);
-	void (* updated) (guint type, gpointer data);
-	void (* zone_in) (guint type, gpointer position, gpointer boundary);
-	void (* zone_out) (guint type, gpointer position, gpointer boundary);
+	void (* updated) (guint type, gpointer data, gpointer accuracy);
+	void (* location_update) (gint error, gpointer position, gpointer velocity, gpointer accuracy);
+	void (* zone_in) (gpointer boundary, gpointer position, gpointer accuracy);
+	void (* zone_out) (gpointer boundary, gpointer position, gpointer accuracy);
 };
 
 GType location_wps_get_type (void);

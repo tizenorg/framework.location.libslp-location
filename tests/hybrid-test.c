@@ -1,10 +1,10 @@
 /*
  * libslp-location
  *
- * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2010-2013 Samsung Electronics Co., Ltd. All rights reserved.
  *
- * Contact: Youngae Kang <youngae.kang@samsung.com>, Yunhan Kim <yhan.kim@samsung.com>,
- *          Genie Kim <daejins.kim@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ * Contact: Youngae Kang <youngae.kang@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ *          Genie Kim <daejins.kim@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,11 +101,10 @@ cb_service_disabled (GObject *self,
 
 static void
 cb_zone_in (GObject *self,
-	guint type,
+	gpointer boundary,
 	gpointer position,
 	gpointer accuracy)
 {
-	g_debug("cb_zone_in: type(%d)", type);
 	LocationPosition *pos = (LocationPosition*) position;
 	LocationAccuracy *acc = (LocationAccuracy*) accuracy;
 
@@ -117,11 +116,10 @@ cb_zone_in (GObject *self,
 
 static void
 cb_zone_out (GObject *self,
-	guint type,
+	gpointer boundary,
 	gpointer position,
 	gpointer accuracy)
 {
-	g_debug("cb_zone_out: type(%d)", type);
 	LocationPosition *pos = (LocationPosition*) position;
 	LocationAccuracy *acc = (LocationAccuracy*) accuracy;
 
@@ -143,7 +141,7 @@ main (int argc, char *argv[])
 
 	loop = g_main_loop_new (NULL, TRUE);
 
-	loc  = location_new (LOCATION_METHOD_HYBRID);
+	loc = location_new (LOCATION_METHOD_HYBRID);
 	if (!loc) {
 		g_debug("location_new failed");
 		return -1;
@@ -176,7 +174,7 @@ main (int argc, char *argv[])
 			bound->rect.right_bottom->latitude, bound->rect.right_bottom->longitude,
 			bound->rect.left_top->latitude, bound->rect.left_top->longitude);
 		location_boundary_free (bound);
-	} else 	g_warning("failed to set property> boundary");
+	} else	g_warning("failed to set property> boundary");
 
 	g_signal_connect (loc, "service-enabled", G_CALLBACK(cb_service_enabled), loc);
 	g_signal_connect (loc, "service-disabled", G_CALLBACK(cb_service_disabled), loc);
@@ -199,7 +197,7 @@ main (int argc, char *argv[])
 		g_debug ("Get property>> last-position> time: %d, lat: %f, long: %f, alt: %f, status: %d",
 			pos->timestamp, pos->latitude, pos->longitude, pos->altitude, pos->status);
 		location_position_free(pos);
-	} else 	g_warning("failed to get property> last-position");
+	} else	g_warning("failed to get property> last-position");
 
 	location_free (loc);
 

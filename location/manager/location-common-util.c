@@ -1,10 +1,10 @@
 /*
  * libslp-location
  *
- * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2010-2013 Samsung Electronics Co., Ltd. All rights reserved.
  *
- * Contact: Youngae Kang <youngae.kang@samsung.com>, Yunhan Kim <yhan.kim@samsung.com>,
- *          Genie Kim <daejins.kim@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ * Contact: Youngae Kang <youngae.kang@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ *          Genie Kim <daejins.kim@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,58 +24,23 @@
 #endif
 
 #include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <location-appman.h>
 
 #include "location.h"
 #include "location-common-util.h"
 #include "location-setting.h"
 #include "location-log.h"
 
-
-int location_application_enabled (void)
+int location_application_get_authority (void)
 {
-	pid_t pid = getpid();
-	location_appman_s *appman;
-	int enabled;
-	int found;
-	time_t timestamp;
+	return LOCATION_APP_ON;
+}
 
-	if (TRUE == location_appman_check_developer_mode()) {
-		LOCATION_LOGE("Location is Enabled");
-		return TRUE;
-	}
-
-	if (location_appman_get_package_by_pid(pid, &appman) != LOCATION_APPMAN_ERROR_NONE) {
-		LOCATION_LOGE("Fail to location_appman_get_package_by_pid");
-		return FALSE;
-	}
-
-	if (location_appman_find_package(appman->package, &found) != LOCATION_APPMAN_ERROR_NONE) {
-		LOCATION_LOGE("Cannot find package [%s]", appman->package);
-		return FALSE;
-	}
-
-	if (found == LOCATION_APPMAN_PACKAGE_NOTFOUND) {
-		LOCATION_LOGD("First time to use location [%s]", appman->package);
-		if (location_appman_register_package(appman) != LOCATION_APPMAN_ERROR_NONE) {
-			LOCATION_LOGE("Fail to register [%s]", appman->package);
-			return FALSE;
-		}
-	} else {
-		LOCATION_LOGD("[%s] is already registered. Update recently used time", appman->package);
-		time(&timestamp);
-		if (location_appman_set_recently_used(appman->package, timestamp) != LOCATION_APPMAN_ERROR_NONE) {
-			LOCATION_LOGD("Cannot update recently used time");
-		}
-	}
-
-	if (location_appman_is_enabled(appman->package, &enabled) != LOCATION_APPMAN_ERROR_NONE) {
-		LOCATION_LOGE("Fail to location_appman_is_enabled");
-		return FALSE;
-	}
-	return enabled;
+int location_application_set_authority (int auth)
+{
+	return LOCATION_ERROR_NONE;
 }
 
 static gint compare_position (gconstpointer a, gconstpointer b)
@@ -98,48 +63,47 @@ boundary_compare (gconstpointer comp1, gconstpointer comp2)
 
 	int ret = -1;
 
-	LocationBoundary *boundary1 = (LocationBoundary *)comp1;
-	LocationBoundary *boundary2 = (LocationBoundary *)comp2;
+	LocationBoundaryPrivate *priv1 = (LocationBoundaryPrivate *)comp1;
+	LocationBoundaryPrivate *priv2 = (LocationBoundaryPrivate *)comp2;
 
-	if (boundary1->type == boundary2->type) {
-		switch (boundary1->type) {
+	if (priv1->boundary->type == priv2->boundary->type) {
+		switch (priv1->boundary->type) {
 			case LOCATION_BOUNDARY_CIRCLE: {
-				if (location_position_equal(boundary1->circle.center, boundary2->circle.center)
-					&& boundary1->circle.radius == boundary2->circle.radius) {
+				if (location_position_equal(priv1->boundary->circle.center, priv2->boundary->circle.center)
+					&& priv1->boundary->circle.radius == priv2->boundary->circle.radius) {
 					ret = 0;
 				}
 				break;
 			}
 			case LOCATION_BOUNDARY_RECT: {
-				if (location_position_equal(boundary1->rect.left_top, boundary2->rect.left_top)
-					&& location_position_equal(boundary1->rect.right_bottom, boundary2->rect.right_bottom)) {
+				if (location_position_equal(priv1->boundary->rect.left_top, priv2->boundary->rect.left_top)
+					&& location_position_equal(priv1->boundary->rect.right_bottom, priv2->boundary->rect.right_bottom)) {
 					ret = 0;
 				}
 				break;
 			}
 			case LOCATION_BOUNDARY_POLYGON: {
-
 				GList *boundary1_next = NULL;
 				GList *boundary2_start = NULL, *boundary2_prev = NULL, *boundary2_next = NULL;
-				if (g_list_length(boundary1->polygon.position_list) != g_list_length(boundary2->polygon.position_list)) {
+				if (g_list_length(priv1->boundary->polygon.position_list) != g_list_length(priv2->boundary->polygon.position_list)) {
 					return -1;
 				}
 
 				// Find a matching index of Boundary2 with Boundary1's 1st postion.
-				boundary2_start = g_list_find_custom(boundary2->polygon.position_list, g_list_nth_data(boundary1->polygon.position_list, 0), (GCompareFunc) compare_position);
+				boundary2_start = g_list_find_custom(priv2->boundary->polygon.position_list, g_list_nth_data(priv1->boundary->polygon.position_list, 0), (GCompareFunc) compare_position);
 				if (boundary2_start == NULL) return -1;
 
 				boundary2_prev = g_list_previous(boundary2_start);
 				boundary2_next = g_list_next(boundary2_start);
-				if (boundary2_prev == NULL) boundary2_prev = g_list_last(boundary2->polygon.position_list);
-				if (boundary2_next == NULL) boundary2_next = g_list_first(boundary2->polygon.position_list);
+				if (boundary2_prev == NULL) boundary2_prev = g_list_last(priv2->boundary->polygon.position_list);
+				if (boundary2_next == NULL) boundary2_next = g_list_first(priv2->boundary->polygon.position_list);
 
-				boundary1_next = g_list_next(boundary1->polygon.position_list);
-				if (location_position_equal((LocationPosition*)boundary1_next->data, (LocationPosition*)boundary2_prev->data) == TRUE){
+				boundary1_next = g_list_next(priv1->boundary->polygon.position_list);
+				if (boundary1_next && location_position_equal((LocationPosition*)boundary1_next->data, (LocationPosition*)boundary2_prev->data) == TRUE){
 					boundary1_next = g_list_next(boundary1_next);
 					while (boundary1_next) {
 						boundary2_prev = g_list_previous(boundary2_prev);
-						if (boundary2_prev == NULL) boundary2_prev = g_list_last(boundary2->polygon.position_list);
+						if (boundary2_prev == NULL) boundary2_prev = g_list_last(priv2->boundary->polygon.position_list);
 						if (location_position_equal((LocationPosition*)boundary1_next->data, (LocationPosition*) boundary2_prev->data) == FALSE){
 							return -1;
 						}
@@ -147,11 +111,11 @@ boundary_compare (gconstpointer comp1, gconstpointer comp2)
 					}
 					ret = 0;
 				}
-				else if (location_position_equal((LocationPosition*)boundary1_next->data, (LocationPosition*)boundary2_next->data) == TRUE) {
+				else if (boundary1_next && location_position_equal((LocationPosition*)boundary1_next->data, (LocationPosition*)boundary2_next->data) == TRUE) {
 					boundary1_next = g_list_next(boundary1_next);
 					while(boundary1_next) {
 						boundary2_next = g_list_next(boundary2_next);
-						if (boundary2_next == NULL) boundary2_next = g_list_first(boundary2->polygon.position_list);
+						if (boundary2_next == NULL) boundary2_next = g_list_first(priv2->boundary->polygon.position_list);
 						if (location_position_equal((LocationPosition*)boundary1_next->data, (LocationPosition*) boundary2_next->data) == FALSE){
 							return -1;
 						}
@@ -175,41 +139,51 @@ boundary_compare (gconstpointer comp1, gconstpointer comp2)
 	return ret;
 }
 
-int set_prop_boundary(GList **prev_boundary_list, GList *new_boundary_list)
+int set_prop_boundary(GList **prev_boundary_priv_list, GList *new_boundary_priv_list)
 {
-	g_return_val_if_fail(new_boundary_list, LOCATION_ERROR_PARAMETER);
+	LOCATION_LOGD("ENTER >>>");
+	g_return_val_if_fail(new_boundary_priv_list, LOCATION_ERROR_PARAMETER);
 
-	int index;
+	int index = 0;
 	GList *check_list = NULL;
 
-	LocationBoundary *new_boundary = NULL;
-	LocationBoundary *copy_boundary = NULL;
+	LocationBoundaryPrivate *new_priv = NULL;
 
-	index = 0;
-	while((new_boundary = (LocationBoundary*) g_list_nth_data(new_boundary_list, index)) != NULL) {
-
-		check_list = g_list_find_custom(*prev_boundary_list, new_boundary, (GCompareFunc)boundary_compare);
+	while((new_priv = (LocationBoundaryPrivate *) g_list_nth_data(new_boundary_priv_list, index)) != NULL) {
+		*prev_boundary_priv_list = g_list_first(*prev_boundary_priv_list);
+		check_list = g_list_find_custom(*prev_boundary_priv_list, new_priv, (GCompareFunc)boundary_compare);
 		if (check_list == NULL) {
-			LOCATION_LOGD("Set Prop >> boundary type: [%d]", new_boundary->type);
-			copy_boundary = location_boundary_copy(new_boundary);
-			*prev_boundary_list = g_list_append(*prev_boundary_list, copy_boundary);
+			LocationBoundaryPrivate *copy_priv = g_slice_new0(LocationBoundaryPrivate);
+			if (!copy_priv) break;
+			copy_priv->boundary = location_boundary_copy(new_priv->boundary);
+			if (!copy_priv->boundary) break;
+			copy_priv->zone_status = new_priv->zone_status;
+			*prev_boundary_priv_list = g_list_append(*prev_boundary_priv_list, copy_priv);
+
+			LOCATION_LOGD("copy_priv: %p, copy_priv->boundary: %p, copy_priv->boundary->type: %d",
+				copy_priv, copy_priv->boundary, copy_priv->boundary->type);
 		}
+		location_boundary_free(new_priv->boundary);
 		index++;
 	}
-	*prev_boundary_list = g_list_first(*prev_boundary_list);
 
+	LOCATION_LOGD("EXIT <<<");
 	return LOCATION_ERROR_NONE;
 }
 
-
-
 int set_prop_removal_boundary(GList **prev_boundary_list, LocationBoundary* boundary)
 {
+	LOCATION_LOGD("ENTER >>>");
 	g_return_val_if_fail(*prev_boundary_list, LOCATION_ERROR_PARAMETER);
 
 	GList *check_list = NULL;
+	LocationBoundaryPrivate *remove_priv = g_slice_new0(LocationBoundaryPrivate);
+	g_return_val_if_fail(remove_priv, LOCATION_ERROR_PARAMETER);
 
-	check_list = g_list_find_custom (*prev_boundary_list, boundary, (GCompareFunc) boundary_compare);
+	remove_priv->boundary = location_boundary_copy(boundary);
+	g_return_val_if_fail(remove_priv->boundary, LOCATION_ERROR_PARAMETER);
+
+	check_list = g_list_find_custom (*prev_boundary_list, remove_priv, (GCompareFunc) boundary_compare);
 	if (check_list) {
 		LOCATION_LOGD("Found");
 		*prev_boundary_list = g_list_delete_link(*prev_boundary_list, check_list);
@@ -221,13 +195,17 @@ int set_prop_removal_boundary(GList **prev_boundary_list, LocationBoundary* boun
 		*prev_boundary_list = NULL;
 	}
 
+	location_boundary_free(remove_priv->boundary);
+	g_slice_free(LocationBoundaryPrivate, remove_priv);
+
+	LOCATION_LOGD("EXIT <<<");
 	return LOCATION_ERROR_NONE;
 }
 
 void free_boundary_list (gpointer data)
 {
-	LocationBoundary *boundary = (LocationBoundary *)data;
+	LocationBoundaryPrivate *priv= (LocationBoundaryPrivate *)data;
 
-	location_boundary_free(boundary);
+	location_boundary_free(priv->boundary);
+	g_slice_free(LocationBoundaryPrivate, priv);
 }
-

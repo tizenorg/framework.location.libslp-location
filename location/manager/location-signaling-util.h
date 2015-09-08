@@ -1,10 +1,10 @@
 /*
  * libslp-location
  *
- * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2010-2013 Samsung Electronics Co., Ltd. All rights reserved.
  *
- * Contact: Youngae Kang <youngae.kang@samsung.com>, Yunhan Kim <yhan.kim@samsung.com>,
- *          Genie Kim <daejins.kim@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ * Contact: Youngae Kang <youngae.kang@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ *          Genie Kim <daejins.kim@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,29 +32,27 @@
 
 G_BEGIN_DECLS
 
-typedef enum {
-	ZONE_STATUS_NONE = 0,
-	ZONE_STATUS_IN,
-	ZONE_STATUS_OUT,
-} ZoneStatus;
-
-void enable_signaling (LocationObject *obj,	guint32 signals[LAST_SIGNAL], gboolean *prev_enabled, gboolean enabled, LocationStatus status);
+void enable_signaling (LocationObject *obj, guint32 signals[LAST_SIGNAL], gboolean *prev_enabled, gboolean enabled, LocationStatus status);
 
 void position_signaling (LocationObject *obj, guint32 signals[LAST_SIGNAL],
-		gboolean *prev_enabled, int interval, gboolean emit,
-		guint *updated_interval, LocationPosition **prev_pos,
-		GList *prev_bound, ZoneStatus *zone_status,
-		const LocationPosition *pos, const LocationAccuracy *acc);
+		guint interval, guint *updated_interval,
+		GList *prev_bound, LocationPosition *pos, LocationAccuracy *acc);
 
 void velocity_signaling (LocationObject* obj, guint32 signals[LAST_SIGNAL],
-		gboolean *prev_enabled, int interval, gboolean emit,
-		guint *updated_timestamp, LocationVelocity **prev_vel, LocationAccuracy **prev_acc,
-		const LocationVelocity *vel, const LocationAccuracy *acc);
+		int interval, guint *updated_timestamp,
+		LocationVelocity *vel, LocationAccuracy *acc);
 
 void satellite_signaling(LocationObject *obj, guint32 signals[LAST_SIGNAL],
 		gboolean *prev_enabled, int interval, gboolean emit,
 		guint *updated_timestamp, LocationSatellite **pre_sat,
-		const LocationSatellite *sat);
+		LocationSatellite *sat);
+
+void location_signaling (LocationObject *obj, guint32 signals[LAST_SIGNAL],
+		gboolean enabled, GList *boundary_list,
+		LocationPosition *cur_pos, LocationVelocity *cur_vel, LocationAccuracy *cur_acc,
+		guint pos_interval, guint vel_interval,
+		gboolean *prev_enabled, guint *prev_pos_timestamp, guint *prev_vel_timestamp,
+		LocationPosition **prev_pos, LocationVelocity **prev_vel, LocationAccuracy **prev_acc);
 
 G_END_DECLS
 

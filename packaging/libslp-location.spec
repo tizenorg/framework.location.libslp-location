@@ -1,31 +1,34 @@
-Name:       libslp-location
-Summary:    Location Based Service
-Version:    0.3.39
-Release:    1
-Group:      System/Libraries
-License:    TBD
-Source0:    %{name}-%{version}.tar.gz
-Requires(post):  /sbin/ldconfig
-Requires(post):  /usr/bin/vconftool
-Requires(postun):  /sbin/ldconfig
+Name: libslp-location
+Summary: Location Based Service
+Version: 0.9.5
+Release: 1
+Group: Framework/Location
+License: Apache-2.0
+Source0: %{name}-%{version}.tar.gz
+Requires(post): /sbin/ldconfig
+Requires(post): /usr/bin/vconftool
+Requires(postun): /sbin/ldconfig
+BuildRequires:  cmake
+BuildRequires:  model-build-features
 BuildRequires:  pkgconfig(glib-2.0)
-BuildRequires:  pkgconfig(gconf-2.0)
-BuildRequires:  pkgconfig(dbus-glib-1)
 BuildRequires:  pkgconfig(gmodule-2.0)
 BuildRequires:  pkgconfig(dlog)
 BuildRequires:  pkgconfig(vconf)
-BuildRequires:  pkgconfig(location-appman)
-#BuildRequires:  pkgconfig(json-glib-1.0)
-
+BuildRequires:  pkgconfig(capi-appfw-app-manager)
+BuildRequires:  pkgconfig(capi-appfw-package-manager)
+BuildRequires:  pkgconfig(pkgmgr-info)
+BuildRequires:  pkgconfig(privacy-manager-client)
+BuildRequires:  pkgconfig(json-glib-1.0)
+BuildRequires:  pkgconfig(lbs-dbus)
 
 %description
 Location Based Service Libraries
 
 
 %package devel
-Summary:    Location Based Service (Development files)
-Group:      System/Libraries
-Requires:   %{name} = %{version}-%{release}
+Summary:	Location Based Service (Development files)
+Group:		System/Libraries
+Requires:	%{name} = %{version}-%{release}
 
 %description devel
 Location Based Service Development Package
@@ -37,10 +40,14 @@ Location Based Service Development Package
 
 %build
 
-./autogen.sh
-./configure --prefix=%{_prefix} --enable-dlog --enable-debug
+export CFLAGS="$CFLAGS -DTIZEN_DEBUG_ENABLE"
+export CXXFLAGS="$CXXFLAGS -DTIZEN_DEBUG_ENABLE"
+export FFLAGS="$FFLAGS -DTIZEN_DEBUG_ENABLE"
 
 # Call make instruction with smp support
+MAJORVER=`echo %{version} | awk 'BEGIN {FS="."}{print $1}'`
+cmake . -DCMAKE_INSTALL_PREFIX=/usr -DFULLVER=%{version} -DMAJORVER=${MAJORVER}
+
 make %{?jobs:-j%jobs}
 
 
@@ -55,36 +62,43 @@ rm -rf %{buildroot}
 
 %post
 /sbin/ldconfig
-vconftool set -t int db/location/last/gps/Timestamp "0" -f
-vconftool set -t double db/location/last/gps/Latitude "0.0" -f
-vconftool set -t double db/location/last/gps/Longitude "0.0" -f
-vconftool set -t double db/location/last/gps/Altitude "0.0" -f
-vconftool set -t double db/location/last/gps/HorAccuracy "0.0" -f
-vconftool set -t double db/location/last/gps/VerAccuracy "0.0" -f
-vconftool set -t double db/location/last/gps/Speed "0.0" -f
-vconftool set -t double db/location/last/gps/Direction "0.0" -f
-vconftool set -t int db/location/last/wps/Timestamp "0" -f
-vconftool set -t double db/location/last/wps/Latitude "0.0" -f
-vconftool set -t double db/location/last/wps/Longitude "0.0" -f
-vconftool set -t double db/location/last/wps/Altitude "0.0" -f
-vconftool set -t double db/location/last/wps/HorAccuracy "0.0" -f
-vconftool set -t double db/location/last/wps/Speed "0.0" -f
-vconftool set -t double db/location/last/wps/Direction "0.0" -f
-vconftool set -t int db/location/last/cps/Timestamp "0" -f
-vconftool set -t double db/location/last/cps/Latitude "0.0" -f
-vconftool set -t double db/location/last/cps/Longitude "0.0" -f
-vconftool set -t double db/location/last/cps/Altitude "0.0" -f
-vconftool set -t double db/location/last/cps/HorAccuracy "0.0" -f
-vconftool set -t int db/location/setting/GpsEnabled "0" -g 6514 -f
-vconftool set -t int db/location/setting/AgpsEnabled "0" -g 6514 -f
-vconftool set -t int db/location/setting/NetworkEnabled "0" -g 6514 -f
-vconftool set -t int db/location/setting/SensorEnabled "0" -g 6514 -f
+vconftool set -t int memory/location/last/gps/Timestamp "0" -i -f -s location_fw::client
+vconftool set -t double memory/location/last/gps/Latitude "0.0" -i -f -s location_fw::client
+vconftool set -t double memory/location/last/gps/Longitude "0.0" -i -f -s location_fw::client
+vconftool set -t double memory/location/last/gps/Altitude "0.0" -i -f -s location_fw::client
+vconftool set -t double memory/location/last/gps/HorAccuracy "0.0" -i -f -s location_fw::client
+vconftool set -t double memory/location/last/gps/VerAccuracy "0.0" -i -f -s location_fw::client
+vconftool set -t double memory/location/last/gps/Speed "0.0" -i -f -s location_fw::client
+vconftool set -t double memory/location/last/gps/Direction "0.0" -i -f -s location_fw::client
+vconftool set -t int memory/location/last/wps/Timestamp "0" -i -f -s location_fw::client
+vconftool set -t double memory/location/last/wps/Latitude "0.0" -i -f -s location_fw::client
+vconftool set -t double memory/location/last/wps/Longitude "0.0" -i -f -s location_fw::client
+vconftool set -t double memory/location/last/wps/Altitude "0.0" -i -f -s location_fw::client
+vconftool set -t double memory/location/last/wps/HorAccuracy "0.0" -i -f -s location_fw::client
+vconftool set -t double memory/location/last/wps/Speed "0.0" -i -f -s location_fw::client
+vconftool set -t double memory/location/last/wps/Direction "0.0" -i -f -s location_fw::client
 
+vconftool set -t int db/location/last/gps/LocTimestamp "0" -f -s location_fw::client
+vconftool set -t int db/location/last/wps/LocTimestamp "0" -f -s location_fw::client
+vconftool set -t string db/location/last/gps/Location "0.0;0.0;0.0;0.0;0.0;0.0;0.0;" -f -s location_fw::client
+vconftool set -t string db/location/last/wps/Location "0.0;0.0;0.0;0.0;0.0;0.0;" -f -s location_fw::client
+
+vconftool set -t int db/location/setting/Usemylocation "1" -g 6514 -f -s location_fw::vconf
+vconftool set -t int db/location/setting/GpsEnabled "1" -g 6514 -f -s location_fw::vconf
+vconftool set -t int db/location/setting/AgpsEnabled "0" -g 6514 -f -s location_fw::vconf
+vconftool set -t int db/location/setting/GpsPopup "1" -g 6514 -f -s system::vconf_network
+
+%if 0%{?model_build_feature_location_position_wps}
+vconftool set -t int db/location/setting/NetworkEnabled "1" -g 6514 -f -s location_fw::vconf
+%else
+vconftool set -t int db/location/setting/NetworkEnabled "0" -g 6514 -f -s location_fw::vconf
+%endif
 
 %postun -p /sbin/ldconfig
 
 
 %files
+%manifest libslp-location.manifest
 %{_libdir}/lib*.so*
 
 

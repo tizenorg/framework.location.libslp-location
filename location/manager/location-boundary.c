@@ -1,10 +1,10 @@
 /*
  * libslp-location
  *
- * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2010-2013 Samsung Electronics Co., Ltd. All rights reserved.
  *
- * Contact: Youngae Kang <youngae.kang@samsung.com>, Yunhan Kim <yhan.kim@samsung.com>,
- *          Genie Kim <daejins.kim@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ * Contact: Youngae Kang <youngae.kang@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ *          Genie Kim <daejins.kim@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 
 /*
  * location_boundary_if_inside(LocationBoundary* boundary,
- * 			LocationPosition* position)
+ *			LocationPosition* position)
  * code from
  *
  * Copyright (c) 1970-2003, Wm. Randolph Franklin
@@ -50,6 +50,12 @@
  * IN THE SOFTWARE.
  */
 
+/*
+ * location_boundary_get_center_position (LocationBoundary *boundary)
+ * algorithm from http://en.wikipedia.org/wiki/Centroid
+ *
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -57,6 +63,7 @@
 #include <math.h>
 #include <string.h>
 #include "location-boundary.h"
+#include "location-common-util.h"
 #include "location-log.h"
 
 GType
@@ -93,7 +100,6 @@ static void _free_polygon_position(gpointer data)
 	location_position_free(position);
 }
 
-
 EXPORT_API LocationBoundary *
 location_boundary_new_for_rect (LocationPosition* left_top,
 	LocationPosition* right_bottom)
@@ -104,7 +110,7 @@ location_boundary_new_for_rect (LocationPosition* left_top,
 	gdouble lon_interval = right_bottom->longitude - left_top->longitude;
 
 	if(lon_interval < 180 && lon_interval > -180) {
-		if(right_bottom->longitude <= left_top->longitude || right_bottom->latitude <= left_top->latitude)
+		if(right_bottom->longitude <= left_top->longitude || right_bottom->latitude >= left_top->latitude)
 			return NULL;
 	}
 	else {
@@ -113,6 +119,8 @@ location_boundary_new_for_rect (LocationPosition* left_top,
 	}
 
 	LocationBoundary* boundary = g_slice_new0 (LocationBoundary);
+	g_return_val_if_fail(boundary, NULL);
+
 	boundary->type = LOCATION_BOUNDARY_RECT;
 	boundary->rect.left_top = location_position_copy(left_top);
 	boundary->rect.right_bottom = location_position_copy(right_bottom);
@@ -126,6 +134,8 @@ location_boundary_new_for_circle (LocationPosition* center,
 	g_return_val_if_fail(center, NULL);
 	g_return_val_if_fail(radius > 0, NULL);
 	LocationBoundary* boundary = g_slice_new0 (LocationBoundary);
+	g_return_val_if_fail(boundary, NULL);
+
 	boundary->type = LOCATION_BOUNDARY_CIRCLE;
 	boundary->circle.center = location_position_copy(center);
 	boundary->circle.radius = radius;
@@ -139,6 +149,7 @@ location_boundary_new_for_polygon(GList *position_list)
 	g_return_val_if_fail(g_list_length(position_list) > 2, NULL);
 
 	LocationBoundary *boundary = g_slice_new0 (LocationBoundary);
+	g_return_val_if_fail(boundary, NULL);
 
 	g_list_foreach(position_list, (GFunc)_append_polygon_position, boundary);
 	boundary->type = LOCATION_BOUNDARY_POLYGON;
@@ -177,7 +188,6 @@ location_boundary_copy (const LocationBoundary* boundary)
 	return NULL;
 }
 
-
 EXPORT_API gboolean
 location_boundary_if_inside (LocationBoundary* boundary,
 	LocationPosition* position)
@@ -188,7 +198,6 @@ location_boundary_if_inside (LocationBoundary* boundary,
 	gboolean is_inside = FALSE;
 
 	switch(boundary->type) {
-
 		case LOCATION_BOUNDARY_RECT: {
 			gdouble y = position->latitude;
 			gdouble x = position->longitude;
@@ -221,7 +230,7 @@ location_boundary_if_inside (LocationBoundary* boundary,
 			center.longitude = boundary->circle.center->longitude;
 
 			location_get_distance(&center, position, &distance);
-			if (distance  < boundary->circle.radius){
+			if (distance < boundary->circle.radius){
 				LOCATION_LOGD("\tInside Circle boundary");
 				is_inside = TRUE;
 			}
@@ -229,20 +238,16 @@ location_boundary_if_inside (LocationBoundary* boundary,
 		}
 		case LOCATION_BOUNDARY_POLYGON: {
 
-			int i, j;
 			double interval_x = 0.0, interval_y = 0.0;
 			double x0, y0;
 			gboolean edge_area;
 			int crossing_num = 0;
 			GList *position_list = boundary->polygon.position_list;
-			int count = g_list_length(position_list);
 			GList *pos1_list = NULL;
 			GList *pos2_list = NULL;
 			LocationPosition* pos1 = NULL;
 			LocationPosition* pos2 = NULL;
 
-			i = 0;
-			j = count - 1;
 			pos1_list = g_list_first(position_list);
 			pos2_list = g_list_last(position_list);
 			while(pos1_list) {
@@ -314,12 +319,19 @@ location_boundary_add(const LocationObject *obj, const LocationBoundary *boundar
 	g_return_val_if_fail (obj, LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail (boundary, LOCATION_ERROR_PARAMETER);
 
-	GList *boundary_list = NULL;
+	GList *boundary_priv_list = NULL;
 
-	boundary_list = g_list_append(boundary_list, (gpointer) boundary);
+	LocationBoundaryPrivate *priv = g_slice_new0(LocationBoundaryPrivate);
+	g_return_val_if_fail (priv, LOCATION_ERROR_PARAMETER);
 
-	g_object_set(G_OBJECT(obj), "boundary", boundary_list, NULL);
+	priv->boundary = location_boundary_copy(boundary);
+	priv->zone_status = ZONE_STATUS_NONE;
 
+	boundary_priv_list = g_list_append(boundary_priv_list, (gpointer) priv);
+
+	g_object_set(G_OBJECT(obj), "boundary", boundary_priv_list, NULL);
+
+	g_list_free(boundary_priv_list);
 
 	return LOCATION_ERROR_NONE;
 }
@@ -341,15 +353,26 @@ location_boundary_foreach(const LocationObject *obj, LocationBoundaryFunc func, 
 	g_return_val_if_fail (obj, LOCATION_ERROR_PARAMETER);
 	g_return_val_if_fail (func, LOCATION_ERROR_PARAMETER);
 
+	int index = 0;
+	GList * boundary_priv_list = NULL;
 	GList * boundary_list = NULL;
+	LocationBoundaryPrivate *priv;
 
-	g_object_get(G_OBJECT(obj), "boundary", &boundary_list, NULL);
+	g_object_get(G_OBJECT(obj), "boundary", &boundary_priv_list, NULL);
 
-	if (boundary_list == NULL) {
+	if (boundary_priv_list == NULL) {
 		LOCATION_LOGD("There is no boundary.");
 		return LOCATION_ERROR_UNKNOWN;
 	}
+
+	while((priv = (LocationBoundaryPrivate *)g_list_nth_data(boundary_priv_list, index))!= NULL) {
+		boundary_list = g_list_append(boundary_list, (gpointer) priv->boundary);
+		index++;
+	}
+
 	g_list_foreach(boundary_list, (GFunc)func, user_data);
+
+	g_list_free(boundary_list);
 
 	return LOCATION_ERROR_NONE;
 }
@@ -367,7 +390,76 @@ EXPORT_API LocationPosition *
 location_boundary_get_center_position (LocationBoundary *boundary)
 {
 	g_return_val_if_fail (boundary, NULL);
+
 	LocationPosition *center = NULL;
 
+	switch(boundary->type) {
+		case LOCATION_BOUNDARY_RECT: {
+			gdouble latitude, longitude, altitude;
+			latitude = (boundary->rect.left_top->latitude + boundary->rect.right_bottom->latitude) / 2.0;
+			longitude = (boundary->rect.left_top->longitude + boundary->rect.right_bottom->longitude) / 2.0;
+			altitude = (boundary->rect.left_top->altitude + boundary->rect.right_bottom->altitude) / 2.0;
+
+			center = location_position_new(boundary->rect.left_top->timestamp, latitude, longitude, altitude, boundary->rect.left_top->status);
+			break;
+		}
+		case LOCATION_BOUNDARY_CIRCLE: {
+			center = location_position_copy(boundary->circle.center);
+			break;
+		}
+		case LOCATION_BOUNDARY_POLYGON: {
+			gdouble center_latitude = 0.0;
+			gdouble center_longitude = 0.0;
+			gdouble area = 0.0;
+
+			gdouble x1, y1;
+			gdouble x2, y2;
+			GList *position_list = boundary->polygon.position_list;
+			GList *pos1_list = g_list_first(position_list);
+			GList *pos2_list = g_list_next(pos1_list);
+			LocationPosition* pos1 = NULL;
+			LocationPosition* pos2 = NULL;
+
+			while(pos2_list) {
+				pos1 = pos1_list->data;
+				pos2 = pos2_list->data;
+
+				x1 = pos1->latitude + 90.0;
+				y1 = pos1->longitude + 180.0;
+				x2 = pos2->latitude + 90.0;
+				y2 = pos2->longitude + 180.0;
+
+				center_latitude += (x1 + x2) * (x1*y2 - x2*y1);
+				center_longitude += (y1 + y2) * (x1*y2 - x2*y1);
+				area += x1*y2 - x2*y1;
+
+				pos1_list = pos2_list;
+				pos2_list = g_list_next(pos2_list);
+			}
+
+			pos2_list = g_list_first(position_list);
+			pos1 = pos1_list->data;
+			pos2 = pos2_list->data;
+
+			x1 = pos1->latitude + 90.0;
+			y1 = pos1->longitude + 180.0;
+			x2 = pos2->latitude + 90.0;
+			y2 = pos2->longitude + 180.0;
+
+			center_latitude += (x1 + x2) * (x1*y2 - x2*y1);
+			center_longitude += (y1 + y2) * (x1*y2 - x2*y1);
+			area += x1*y2 - x2*y1;
+
+			area = fabs(area / 2.0);
+			if (area != 0) {
+				center_latitude = (center_latitude - 90.0) / (6.0 * area);
+				center_longitude = (center_longitude - 180.0) / (6.0 * area);
+				center = location_position_new(0, center_latitude, center_longitude, 0, LOCATION_STATUS_2D_FIX);
+			}
+			break;
+		}
+		default:
+			break;
+	}
 	return center;
 }

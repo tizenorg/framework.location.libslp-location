@@ -1,10 +1,10 @@
 /*
  * libslp-location
  *
- * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2010-2013 Samsung Electronics Co., Ltd. All rights reserved.
  *
- * Contact: Youngae Kang <youngae.kang@samsung.com>, Yunhan Kim <yhan.kim@samsung.com>,
- *          Genie Kim <daejins.kim@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ * Contact: Youngae Kang <youngae.kang@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ *					Genie Kim <daejins.kim@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,25 +27,19 @@
  * @brief This file contains macro functions for logging.
  */
 
-#define TAG_LOCATION 		"location"
+/* Tag defines */
+#define TAG_LOCATION_FWK "LOCATION"
 
-#ifdef LOCATION_DLOG_DEBUG        // if debug mode, show filename & line number
 #include <dlog.h>
-#define LOCATION_LOGD(fmt,args...)  SLOG(LOG_DEBUG, TAG_LOCATION, "[%-15s:%-4d:%-27s]"fmt"\n", __FILE__, __LINE__, __FUNCTION__, ##args)
-#define LOCATION_LOGW(fmt,args...)  SLOG(LOG_WARN,  TAG_LOCATION, "[%-15s:%-4d:%-27s]"fmt"\n", __FILE__, __LINE__, __FUNCTION__, ##args)
-#define LOCATION_LOGI(fmt,args...)  SLOG(LOG_INFO,  TAG_LOCATION, "[%-15s:%-4d:%-27s]"fmt"\n", __FILE__, __LINE__, __FUNCTION__, ##args)
-#define LOCATION_LOGE(fmt,args...)  SLOG(LOG_ERROR, TAG_LOCATION, "[%-15s:%-4d:%-27s]"fmt"\n", __FILE__, __LINE__, __FUNCTION__, ##args)
-#elif LOCATION_DLOG_RELEASE      // if release mode, do not show filename & line number
-#include <dlog.h>
-#define LOCATION_LOGD(fmt,args...)  SLOG(LOG_DEBUG, TAG_LOCATION, fmt"\n", ##args)
-#define LOCATION_LOGW(fmt,args...)  SLOG(LOG_WARN,  TAG_LOCATION, fmt"\n", ##args)
-#define LOCATION_LOGI(fmt,args...)  SLOG(LOG_INFO,  TAG_LOCATION, fmt"\n", ##args)
-#define LOCATION_LOGE(fmt,args...)  SLOG(LOG_ERROR, TAG_LOCATION, fmt"\n", ##args)
-#else                       // if do not use dlog
-#define LOCATION_LOGD(...)  g_debug(__VA_ARGS__);
-#define LOCATION_LOGW(...)  g_warning(__VA_ARGS__);
-#define LOCATION_LOGI(...)  g_message(__VA_ARGS__);
-#define LOCATION_LOGE(...)  g_error(__VA_ARGS__);
+#ifdef LOG_TAG
+#undef LOG_TAG
+#define LOG_TAG TAG_LOCATION_FWK
 #endif
+
+#define LOCATION_LOGD(fmt,args...)		LOGD(fmt, ##args)
+#define LOCATION_LOGW(fmt,args...)		LOGW(fmt, ##args)
+#define LOCATION_LOGI(fmt,args...)		LOGI(fmt, ##args)
+#define LOCATION_LOGE(fmt,args...)		LOGE(fmt, ##args)
+#define LOCATION_SECLOG(fmt,args...)	SECURE_LOGW(fmt, ##args)
 
 #endif

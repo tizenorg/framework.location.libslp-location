@@ -1,10 +1,10 @@
 /*
  * libslp-location
  *
- * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2010-2013 Samsung Electronics Co., Ltd. All rights reserved.
  *
- * Contact: Youngae Kang <youngae.kang@samsung.com>, Yunhan Kim <yhan.kim@samsung.com>,
- *          Genie Kim <daejins.kim@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ * Contact: Youngae Kang <youngae.kang@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ *			Genie Kim <daejins.kim@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,8 @@ location_accuracy_new (LocationAccuracyLevel level,
 	gdouble vertical_accuracy)
 {
 	LocationAccuracy* accuracy = g_slice_new0 (LocationAccuracy);
+	g_return_val_if_fail(accuracy, NULL);
+
 	accuracy->level = level;
 	accuracy->horizontal_accuracy = horizontal_accuracy;
 	accuracy->vertical_accuracy = vertical_accuracy;
@@ -61,20 +63,22 @@ location_accuracy_free (LocationAccuracy* accuracy)
 }
 
 static int
-comp_int(int a, int b){
+comp_int(int a, int b)
+{
 	if (a < b) return -1;
 	if (a == b) return 0;
 	return 1;
 }
 
 static int
-comp_double_reverse(double a, double b) {
-        if (a > b) return -1;
-        else if (a == b) return 0;
-        return 1;
+comp_double_reverse(double a, double b)
+{
+	if (a > b) return -1;
+	else if (a == b) return 0;
+	return 1;
 }
 
-int
+EXPORT_API int
 location_accuracy_level_compare(const LocationAccuracy *accuracy1, const LocationAccuracy *accuracy2)
 {
 	g_return_val_if_fail(accuracy1, -1);
@@ -100,6 +104,6 @@ location_accuracy_copy (const LocationAccuracy *accuracy)
 {
 	g_return_val_if_fail(accuracy, NULL);
 	return location_accuracy_new(accuracy->level,
-								accuracy->horizontal_accuracy,
-								accuracy->vertical_accuracy);
+				accuracy->horizontal_accuracy,
+				accuracy->vertical_accuracy);
 }

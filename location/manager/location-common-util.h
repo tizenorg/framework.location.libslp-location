@@ -1,10 +1,10 @@
 /*
  * libslp-location
  *
- * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2010-2013 Samsung Electronics Co., Ltd. All rights reserved.
  *
- * Contact: Youngae Kang <youngae.kang@samsung.com>, Yunhan Kim <yhan.kim@samsung.com>,
- *          Genie Kim <daejins.kim@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ * Contact: Youngae Kang <youngae.kang@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ *          Genie Kim <daejins.kim@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,11 @@
 
 #include <location.h>
 #include <location-ielement.h>
+#include <location-boundary.h>
+
+#define CAPP	1
+#define WEBAPP	2
+#define CPPAPP	3
 
 /**
  * @file location-common-util.h
@@ -32,8 +37,25 @@
 
 G_BEGIN_DECLS
 
-int location_application_manager (void);
-int location_application_enabled (void);
+typedef enum {
+	LOCATION_APP_OFF = 0,
+	LOCATION_APP_ON,
+	LOCATION_APP_NOT_FOUND
+} LOCATION_APP_STATE;
+
+typedef enum {
+	ZONE_STATUS_NONE = 0,
+	ZONE_STATUS_IN,
+	ZONE_STATUS_OUT,
+} ZoneStatus;
+
+typedef struct _LocationBoundaryPrivate {
+	LocationBoundary *boundary;
+	ZoneStatus zone_status;
+} LocationBoundaryPrivate;
+
+int location_application_get_authority(void);
+int location_application_set_authority (int auth);
 
 int set_prop_boundary(GList **prev_boundary_list, GList *new_boundary_list);
 int set_prop_removal_boundary(GList **prev_boundary_list, LocationBoundary *boundary);

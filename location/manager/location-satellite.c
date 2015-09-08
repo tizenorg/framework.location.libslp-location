@@ -1,10 +1,10 @@
 /*
  * libslp-location
  *
- * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2010-2013 Samsung Electronics Co., Ltd. All rights reserved.
  *
- * Contact: Youngae Kang <youngae.kang@samsung.com>, Yunhan Kim <yhan.kim@samsung.com>,
- *          Genie Kim <daejins.kim@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ * Contact: Youngae Kang <youngae.kang@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ *          Genie Kim <daejins.kim@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,8 @@ EXPORT_API LocationSatellite*
 location_satellite_new (int num_of_sat_inview)
 {
 	LocationSatellite* satellite = g_slice_new0(LocationSatellite);
+	g_return_val_if_fail(satellite, NULL);
+
 	satellite->num_of_sat_inview = num_of_sat_inview;
 	satellite->num_of_sat_used = 0;
 	satellite->sat_inview = g_new0(LocationSatelliteDetail, satellite->num_of_sat_inview);

@@ -1,10 +1,10 @@
 /*
  * libslp-location
  *
- * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2010-2013 Samsung Electronics Co., Ltd. All rights reserved.
  *
- * Contact: Youngae Kang <youngae.kang@samsung.com>, Yunhan Kim <yhan.kim@samsung.com>,
- *          Genie Kim <daejins.kim@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ * Contact: Youngae Kang <youngae.kang@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ *          Genie Kim <daejins.kim@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,20 +76,6 @@ main (int argc, char *argv[])
 	LocationMethod method = LOCATION_METHOD_NONE;
 	g_object_get(loc, "method", &method, NULL);
 	g_debug("Get property>> method:%d", method);
-
-	char* devname = NULL;
-	g_object_get(loc, "dev-name", &devname, NULL);
-	if (devname) {
-		g_debug("Get property>> dev-name: %s", devname);
-		g_free(devname);
-	} else g_warning("failed to get property> dev-name");
-
-	g_object_set(loc, "dev-name", "/dev/test", NULL);
-	g_object_get(loc, "dev-name", &devname, NULL);
-	if (devname) {
-		g_debug("Get property>> dev-name: %s", devname);
-		g_free(devname);
-	} else g_warning("failed to set property> dev-name");
 
 	g_signal_connect (loc, "service-enabled", G_CALLBACK(cb_service_enabled), loc);
 	g_signal_connect (loc, "service-disabled", G_CALLBACK(cb_service_disabled), loc);

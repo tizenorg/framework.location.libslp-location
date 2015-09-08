@@ -1,10 +1,10 @@
 /*
  * libslp-location
  *
- * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2010-2013 Samsung Electronics Co., Ltd. All rights reserved.
  *
- * Contact: Youngae Kang <youngae.kang@samsung.com>, Yunhan Kim <yhan.kim@samsung.com>,
- *          Genie Kim <daejins.kim@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ * Contact: Youngae Kang <youngae.kang@samsung.com>, Minjune Kim <sena06.kim@samsung.com>
+ *          Genie Kim <daejins.kim@samsung.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@
  * limitations under the License.
  */
 
-#include <gconf/gconf-client.h>
 #include <location.h>
+#include <location-geocode.h>
 #include <location-map-service.h>
 
 static GMainLoop *loop = NULL;
@@ -125,26 +125,31 @@ cb_service_enabled (GObject *self,
 static gboolean
 async_request (gpointer loc)
 {
-	LocationAddress *addr = location_address_new ("1", "Post Street", NULL, "san jose", "ca", NULL, "95113");
-	LocationError err = location_map_get_position_from_address_async(loc, addr, cb_position_from_address, loc);
+	guint req_id = 0;
+	LocationGeocodePreference *pref =location_geocode_pref_new();
+	location_geocode_pref_set_max_result(pref, 25);
+
+	LocationAddress *addr = location_address_new ("1", "Post Street", NULL, "san jose", "ca", NULL, "95113",NULL,NULL,NULL);
+	LocationError err = location_map_get_position_from_address_async(loc, addr,pref, cb_position_from_address, loc,&req_id);
 	if (LOCATION_ERROR_NONE == err)
 		g_debug("location_map_get_position_from_address_async() success");
 	else g_warning ("location_map_get_position_from_address_async() failed> error code:%d", err);
 	location_address_free (addr);
 
 	gchar *addr_str = g_strdup("4 N 2nd Street 95113");
-	err = location_map_get_position_from_freeformed_address_async(loc, addr_str, cb_position_from_freeformed_address, loc);
+	err = location_map_get_position_from_freeformed_address_async(loc, addr_str,pref, cb_position_from_freeformed_address, loc,&req_id);
 	if (LOCATION_ERROR_NONE == err)
 		g_debug("location_map_get_position_from_freeformed_address_async() success");
 	else g_warning ("location_map_get_position_from_freeformed_address_async() failed> error code:%d", err);
 	g_free(addr_str);
 
 	LocationPosition *pos = location_position_new (0, 37.3322, -121.8720, 0, LOCATION_STATUS_2D_FIX);
-	err = location_map_get_address_from_position_async(loc, pos, cb_address_from_position, loc);
+	err = location_map_get_address_from_position_async(loc, pos,cb_address_from_position, loc,&req_id);
 	if (LOCATION_ERROR_NONE == err)
 		g_debug("location_map_get_address_from_position_async() success");
 	else g_warning ("location_map_get_address_from_position_async() failed> error code:%d", err);
 	location_position_free (pos);
+	location_geocode_pref_free(pref);
 	return FALSE;
 }
 
@@ -154,13 +159,13 @@ main (int argc, char *argv[])
 	LocationMapObject *loc = NULL;
 
 	// If application is executed by AUL, this is not needed.
-	g_setenv("PKG_NAME", "org.tizen.address-sample", 1);
+	g_setenv("PKG_NAME", "com.samsung.address-sample", 1);
 
 	g_type_init();
 	location_init ();
 	loop = g_main_loop_new (NULL, TRUE);
 
-	loc  = location_map_new (NULL);
+	loc = location_map_new (NULL);
 	if (!loc) {
 		g_warning("location_map_new failed");
 		return -1;
@@ -172,7 +177,7 @@ main (int argc, char *argv[])
 	GList *acc_list = NULL;
 	LocationAddress *addr = NULL;
 
-	addr = location_address_new ("1", "Post Street", NULL, "san jose", "ca", NULL, "95113");
+	addr = location_address_new ("1", "Post Street", NULL, "san jose", "ca", NULL, "95113",NULL,NULL,NULL);
 	LocationError err = location_map_get_position_from_address(loc, addr, &pos_list, &acc_list);
 	if (LOCATION_ERROR_NONE == err) {
 		g_list_foreach (pos_list, print_pos, NULL);
