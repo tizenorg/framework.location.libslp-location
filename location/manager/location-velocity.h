@@ -26,7 +26,7 @@
 
 G_BEGIN_DECLS
 
-GType location_velocity_get_type (void);
+GType location_velocity_get_type(void);
 #define LOCATION_TYPE_VELOCITY		(location_velocity_get_type ())
 
 /**
@@ -45,12 +45,11 @@ GType location_velocity_get_type (void);
 /**
  * @brief This represents velocity information such as as speed, direction, climb.
  */
-struct _LocationVelocity
-{
-	guint timestamp;		///< Time stamp.
-	gdouble speed;			///< The speed over ground. (km/h)
-	gdouble direction;		///< The course made in degrees relative to true north. The value is always in the range [0.0, 360.0] degree.
-	gdouble climb;			///< The vertical speed. (km/h)
+struct _LocationVelocity {
+	guint timestamp;		/*/< Time stamp. */
+	gdouble speed;			/*/< The speed over ground. (km/h) */
+	gdouble direction;		/*/< The course made in degrees relative to true north. The value is always in the range [0.0, 360.0] degree. */
+	gdouble climb;			/*/< The vertical speed. (km/h) */
 };
 
 /**
@@ -65,7 +64,7 @@ struct _LocationVelocity
  * @return a new #LocationVelocity
  * @retval NULL if error occured
  */
-LocationVelocity *location_velocity_new (guint timestamp, gdouble speed, gdouble direction,	gdouble climb);
+LocationVelocity *location_velocity_new(guint timestamp, gdouble speed, gdouble direction,	gdouble climb);
 
 /**
  * @brief	Free a #LocationVelocity.
@@ -75,7 +74,7 @@ LocationVelocity *location_velocity_new (guint timestamp, gdouble speed, gdouble
  * @param [in] velocity - a #LocationVelocity.
  * @return None.
  */
-void location_velocity_free (LocationVelocity *velocity);
+void location_velocity_free(LocationVelocity *velocity);
 
 /**
  * @brief	Compares two velocities for equality, returning TRUE if they are equal.
@@ -89,7 +88,7 @@ void location_velocity_free (LocationVelocity *velocity);
  * TRUE - if equal\n
  * FALSE - if not equal\n
  */
-gboolean location_velocity_equal (const LocationVelocity *velocity1, const LocationVelocity *velocity2);
+gboolean location_velocity_equal(const LocationVelocity *velocity1, const LocationVelocity *velocity2);
 
 /**
  * @brief	Makes a copy of #LocationVelocity
@@ -100,7 +99,7 @@ gboolean location_velocity_equal (const LocationVelocity *velocity1, const Locat
  * @return a new #LocationVelocity
  * @retval NULL if error occured
  */
-LocationVelocity *location_velocity_copy (const LocationVelocity *velocity);
+LocationVelocity *location_velocity_copy(const LocationVelocity *velocity);
 
 /**
  * @} @}

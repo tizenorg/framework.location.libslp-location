@@ -39,112 +39,7 @@ typedef struct _location_privilege_s {
 	bool found;
 } location_privilege_s;
 
-int
-location_get_app_type(char *target_app_id)
-{
-	int ret = 0;
-	pid_t pid = 0;
-	char *app_id = NULL;
-	app_info_h app_info;
-	char *type = NULL;
 
-	if (target_app_id == NULL) {
-		pid = getpid();
-		ret = app_manager_get_app_id(pid, &app_id);
-		if (ret != APP_MANAGER_ERROR_NONE) {
-			LOCATION_LOGE("Fail to get app_id. Err[%d]", ret);
-			return LOCATION_ERROR_NONE;
-		}
-	}
-	else {
-		app_id = g_strdup(target_app_id);
-	}
-
-	ret = app_info_create(app_id, &app_info);
-	if (ret != APP_MANAGER_ERROR_NONE) {
-		LOCATION_LOGE("Fail to get app_id. Err[%d]", ret);
-		g_free(app_id);
-		return 0;
-	}
-
-	ret = app_info_get_type(app_info, &type);
-	if (ret != APP_MANAGER_ERROR_NONE) {
-		LOCATION_LOGE ("Fail to get type. Err[%d]", ret);
-		g_free(app_id);
-		app_info_destroy(app_info);
-		return 0;
-	}
-
-	if (strcmp(type,"c++app") == 0) {
-		ret = CPPAPP;
-	} else if (strcmp(type,"webapp") == 0) {
-		ret = WEBAPP;
-	} else {
-		ret = CAPP;
-	}
-
-	g_free(type);
-	g_free(app_id);
-	app_info_destroy(app_info);
-
-	return ret;
-}
-
-int _privilege_list_cb(const char *privilege_name, void *user_data)
-{
-	g_return_val_if_fail((privilege_name != NULL), -1);
-	location_privilege_s *requested_privilege = (location_privilege_s *)user_data;
-
-	if (g_strcmp0(privilege_name, requested_privilege->name) == 0) {
-		LOCATION_LOGD("[%s] is in privileges", requested_privilege->name);
-		requested_privilege->found = 1;
-		return -1;
-	}
-	return 0;
-}
-
-#ifdef TIZEN_WERABLE
-int
-location_get_webapp_privilege(const char *package_id, const char *privilege_name)
-{
-	g_return_val_if_fail((privilege_name != NULL), FALSE);
-
-	int is_found = -1;
-	int ret = 0;
-	pkgmgrinfo_pkginfo_h handle;
-
-	location_privilege_s *requested_privilege;
-	requested_privilege = g_new0(location_privilege_s, sizeof(location_privilege_s));
-	if (requested_privilege == NULL) {
-		LOCATION_SECLOG("Can't allocate memory");
-		return FALSE;
-	}
-	requested_privilege->name = g_strdup(privilege_name);
-	requested_privilege->found = 0;
-
-	ret = pkgmgrinfo_pkginfo_get_pkginfo(package_id, &handle);
-	if (ret != PMINFO_R_OK) {
-		LOCATION_SECLOG("Fail to get pkginfo of package_id[%s]", package_id);
-		g_free(requested_privilege->name);
-		g_free(requested_privilege);
-		return FALSE;
-	}
-
-	ret = pkgmgrinfo_pkginfo_foreach_privilege(handle, _privilege_list_cb, requested_privilege);
-	if (!requested_privilege->found) {
-		LOCATION_LOGI("Do not have location privilege");
-	} else {
-		LOCATION_LOGE("There is [%s]", privilege_name);
-	}
-	is_found = requested_privilege->found;
-
-	g_free(requested_privilege->name);
-	g_free(requested_privilege);
-	pkgmgrinfo_pkginfo_destroy_pkginfo(handle);
-
-	return is_found;
-}
-#endif
 
 void
 location_privacy_initialize(void)
@@ -178,8 +73,7 @@ location_privacy_initialize(void)
 	}
 
 	ret = privacy_checker_initialize(package_id);
-	if(ret != PRIV_MGR_ERROR_SUCCESS)
-	{
+	if (ret != PRIV_MGR_ERROR_SUCCESS) {
 		LOCATION_LOGE("Fail to initialize privacy checker. err[%d]", ret);
 		pkgmgrinfo_appinfo_destroy_appinfo(pkgmgrinfo_appinfo);
 		free(app_id);
@@ -197,8 +91,7 @@ location_privacy_finalize(void)
 {
 	int ret = 0;
 	ret = privacy_checker_finalize();
-	if(ret != PRIV_MGR_ERROR_SUCCESS)
-	{
+	if (ret != PRIV_MGR_ERROR_SUCCESS) {
 		LOCATION_LOGE("Fail to finalize privacy_cehecker. Err[%d]", ret);
 		return;
 	}
@@ -245,9 +138,9 @@ location_get_privacy(const char *privilege_name)
 		return LOCATION_ERROR_NOT_ALLOWED;
 	}
 
-#ifdef TIZEN_WERABLE
+#ifdef TIZEN_PROFILE_WERABLE
 	if (app_type == WEBAPP) {
-		LOCATION_LOGE("WEBAPP use location");
+		LOCATION_LOGI("WEBAPP use location");
 		if (location_get_webapp_privilege(package_id, privilege_name) == 0) {
 			g_free(package_id);
 			g_free(app_id);
@@ -322,8 +215,7 @@ location_check_privilege(const char *privilege_name)
 #endif
 
 	ret = privacy_checker_initialize(package_id);
-	if(ret != PRIV_MGR_ERROR_SUCCESS)
-	{
+	if (ret != PRIV_MGR_ERROR_SUCCESS) {
 		LOCATION_LOGE("Fail to initialize privacy checker. err[%d]", ret);
 		pkgmgrinfo_appinfo_destroy_appinfo(pkgmgrinfo_appinfo);
 		g_free(app_id);
@@ -342,8 +234,7 @@ location_check_privilege(const char *privilege_name)
 	g_free(app_id);
 
 	ret = privacy_checker_finalize();
-	if(ret != PRIV_MGR_ERROR_SUCCESS)
-	{
+	if (ret != PRIV_MGR_ERROR_SUCCESS) {
 		LOCATION_LOGE("Fail to finalize privacy_cehecker. Err[%d]", ret);
 		return LOCATION_ERROR_NOT_ALLOWED;
 	}

@@ -26,7 +26,7 @@
 
 G_BEGIN_DECLS
 
-GType location_batch_get_type (void);
+GType location_batch_get_type(void);
 #define LOCATION_TYPE_BATCH (location_batch_get_type ())
 
 /**
@@ -46,40 +46,39 @@ GType location_batch_get_type (void);
  * TBD
  */
 typedef struct {
-	guint timestamp;		///< Time stamp.
-	guint level;			///< Level.
-	gdouble latitude;		///< Latitude data.
-	gdouble longitude;		///< Longitude data.
-	gdouble altitude;		///< Altitude data.
-	gdouble horizontal_accuracy;	///< Horizontal accuracy data.
-	gdouble vertical_accuracy;		///< Vertical accuracy data.
-	gdouble speed;			///< The speed over ground. (km/h)
-	gdouble direction;		///< The course made in degrees relative to true north. The value is always in the range [0.0, 360.0] degree.
-	gdouble climb;			///< The vertical speed. (km/h)
+	guint timestamp;		/*/< Time stamp. */
+	guint level;			/*/< Level. */
+	gdouble latitude;		/*/< Latitude data. */
+	gdouble longitude;		/*/< Longitude data. */
+	gdouble altitude;		/*/< Altitude data. */
+	gdouble horizontal_accuracy;	/*/< Horizontal accuracy data. */
+	gdouble vertical_accuracy;		/*/< Vertical accuracy data. */
+	gdouble speed;			/*/< The speed over ground. (km/h) */
+	gdouble direction;		/*/< The course made in degrees relative to true north. The value is always in the range [0.0, 360.0] degree. */
+	gdouble climb;			/*/< The vertical speed. (km/h) */
 } LocationBatchDetail;
 
 /**
  * TBD
  */
-struct _LocationBatch
-{
-	guint num_of_location;	///< The number of location batch.
-	LocationBatchDetail* batch_data;
+struct _LocationBatch {
+	guint num_of_location;	/*/< The number of location batch. */
+	LocationBatchDetail *batch_data;
 };
 
-LocationBatch*location_batch_new (int num_of_location);
+LocationBatch *location_batch_new(int num_of_location);
 
-gboolean location_set_batch_parse_details(LocationBatch *batch, char* location_info, int i);
+gboolean location_set_batch_parse_details(LocationBatch *batch, char *location_info, int i);
 
 gboolean location_get_batch_details(const LocationBatch *batch, guint index, gdouble *latitude, gdouble *longitude, gdouble *altitude, gdouble *speed, gdouble *direction, gdouble *h_accuracy, gdouble *v_accuracy, guint *timestamp);
 
 gboolean location_set_batch_details(LocationBatch *batch, guint index, gdouble latitude, gdouble longitude, gdouble altitude, gdouble speed, gdouble direction, gdouble h_accuracy, gdouble v_accuracy, guint timestamp);
 
-LocationBatch *location_batch_copy (const LocationBatch *batch);
+LocationBatch *location_batch_copy(const LocationBatch *batch);
 
-LocationBatch* location_get_batch_file (int num_of_location);
+LocationBatch *location_get_batch_file(int num_of_location);
 
-void location_batch_free (LocationBatch* batch);
+void location_batch_free(LocationBatch *batch);
 
 /**
  * @} @}

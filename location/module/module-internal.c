@@ -64,7 +64,7 @@ static GMod *gmod_new(const char *module_name, gboolean is_resident)
 	return gmod;
 }
 
-static void gmod_free(GMod * gmod)
+static void gmod_free(GMod *gmod)
 {
 	if (gmod->name)
 		g_free(gmod->name);
@@ -76,7 +76,7 @@ static void gmod_free(GMod * gmod)
 }
 
 static gboolean
-gmod_find_sym(GMod * gmod, gpointer * init_func, gpointer * shutdown_func)
+gmod_find_sym(GMod *gmod, gpointer *init_func, gpointer *shutdown_func)
 {
 	char sym[256];
 	g_stpcpy(sym, "init");
@@ -140,7 +140,7 @@ static gpointer mod_new(const char *module_name)
 			ret_mod = NULL;
 		} else
 			ret_mod = (gpointer) _mod;
-	}else {
+	} else {
 		LOCATION_LOGW("module name (%s) is wrong", module_name);
 		ret_mod = NULL;
 	}
@@ -265,7 +265,7 @@ gboolean module_is_supported(const char *module_name)
 	return found;
 }
 
-gchar *mod_get_realpath(const gchar * module_name)
+gchar *mod_get_realpath(const gchar *module_name)
 {
 	gchar origin_path[PATH_MAX] = { 0, };
 	gchar link_path[PATH_MAX] = { 0, };
@@ -273,7 +273,7 @@ gchar *mod_get_realpath(const gchar * module_name)
 
 	snprintf(link_path, PATH_MAX, "%s/lib%s.so", MODULE_PATH_PREFIX, module_name);
 
-	if (realpath(link_path, origin_path) == NULL || strlen(origin_path) == 0 ) {
+	if (realpath(link_path, origin_path) == NULL || strlen(origin_path) == 0) {
 		LOCATION_LOGE("Fail to get real path of [%s]", module_name);
 		return NULL;
 	}

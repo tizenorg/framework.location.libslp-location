@@ -41,24 +41,22 @@ G_BEGIN_DECLS
 typedef struct _LocationWps			LocationWps;
 typedef struct _LocationWpsClass	LocationWpsClass;
 
-struct _LocationWps
-{
+struct _LocationWps {
 	GObject parent_instance;
 };
 
-struct _LocationWpsClass
-{
+struct _LocationWpsClass {
 	GObjectClass parent_class;
 
-	void (* enabled) (guint type);
-	void (* disabled) (guint type);
-	void (* updated) (guint type, gpointer data, gpointer accuracy);
-	void (* location_update) (gint error, gpointer position, gpointer velocity, gpointer accuracy);
-	void (* zone_in) (gpointer boundary, gpointer position, gpointer accuracy);
-	void (* zone_out) (gpointer boundary, gpointer position, gpointer accuracy);
+	void (* enabled)(guint type);
+	void (* disabled)(guint type);
+	void (* updated)(gint type, gpointer data, gpointer velocity, gpointer accuracy);
+	void (* location_updated)(gint error, gpointer position, gpointer velocity, gpointer accuracy);
+	void (* zone_in)(gpointer boundary, gpointer position, gpointer accuracy);
+	void (* zone_out)(gpointer boundary, gpointer position, gpointer accuracy);
 };
 
-GType location_wps_get_type (void);
+GType location_wps_get_type(void);
 
 G_END_DECLS
 

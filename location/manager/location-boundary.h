@@ -27,7 +27,7 @@
 
 G_BEGIN_DECLS
 
-GType location_boundary_get_type (void);
+GType location_boundary_get_type(void);
 #define LOCATION_TYPE_BOUNDARY (location_boundary_get_type ())
 
 /**
@@ -47,50 +47,50 @@ GType location_boundary_get_type (void);
  * @brief
  * The type of the @location_boundary_foreach function of #LocationObject
  */
-typedef void (*LocationBoundaryFunc) (LocationBoundary *boundary, gpointer user_data);
+typedef void (*LocationBoundaryFunc)(LocationBoundary *boundary, gpointer user_data);
 
 /**
  * @brief This represents used geographical type, and supports rectangle or circle area.
  */
 typedef enum {
-	LOCATION_BOUNDARY_NONE = 0,		///< Undefined geographical area type.
-	LOCATION_BOUNDARY_RECT,			///< Rectangular geographical area type.
-	LOCATION_BOUNDARY_CIRCLE,		///< Circle geographical area type.
-	LOCATION_BOUNDARY_POLYGON		///< Polygon geographical area type.
+    LOCATION_BOUNDARY_NONE = 0,		/*/< Undefined geographical area type. */
+    LOCATION_BOUNDARY_RECT,			/*/< Rectangular geographical area type. */
+    LOCATION_BOUNDARY_CIRCLE,		/*/< Circle geographical area type. */
+    LOCATION_BOUNDARY_POLYGON		/*/< Polygon geographical area type. */
 } LocationBoundaryType;
 
 /**
  * @brief This represents a rectangular geographical area.
  */
 typedef struct {
-	LocationPosition* left_top;		///< The left top position of rectangle.
-	LocationPosition* right_bottom;	///< The right bottom position of rectangle.
+	LocationPosition *left_top;		/*/< The left top position of rectangle. */
+	LocationPosition *right_bottom;	/*/< The right bottom position of rectangle. */
 } LocationRect;
 
 /**
  * @brief This represents a circle geographical area with center geographic position and radius.
  */
 typedef struct {
-	LocationPosition* center;		///< The center position of a circle.
-	gdouble radius;					///< The radius of a circle.
+	LocationPosition *center;		/*/< The center position of a circle. */
+	gdouble radius;					/*/< The radius of a circle. */
 } LocationCircle;
 
 /**
  * @brief This represents a polygon geographical area.
  */
 typedef struct {
-	GList *position_list;			///< The collection of positions
+	GList *position_list;			/*/< The collection of positions */
 } LocationPolygon;
 
 /**
  * @brief This represents boundary information such as rectangular or circle area.
  */
-struct _LocationBoundary{
-	LocationBoundaryType type;		///< The boundary type of this information.
+struct _LocationBoundary {
+	LocationBoundaryType type;		/*/< The boundary type of this information. */
 	union {
-		LocationRect rect;			///< The geographical information of a rectangle.
-		LocationCircle circle;		///< The geographical information of a circle.
-		LocationPolygon polygon;	///< The geographical information of a polygon.
+		LocationRect rect;			/*/< The geographical information of a rectangle. */
+		LocationCircle circle;		/*/< The geographical information of a circle. */
+		LocationPolygon polygon;	/*/< The geographical information of a polygon. */
 	};
 };
 
@@ -104,7 +104,7 @@ struct _LocationBoundary{
  * @return a new #LocationBoundary
  * @retval NULL if error occured
  */
-LocationBoundary *location_boundary_new_for_rect (LocationPosition *left_top, LocationPosition *right_bottom);
+LocationBoundary *location_boundary_new_for_rect(LocationPosition *left_top, LocationPosition *right_bottom);
 
 /**
  * @brief	Create a circle type of new #LocationBoundary with given information.
@@ -116,7 +116,7 @@ LocationBoundary *location_boundary_new_for_rect (LocationPosition *left_top, Lo
  * @return a new #LocationBoundary
  * @retval NULL if error occured
  */
-LocationBoundary *location_boundary_new_for_circle (LocationPosition *center, gdouble radius);
+LocationBoundary *location_boundary_new_for_circle(LocationPosition *center, gdouble radius);
 
 /**
  * @brief	Create a polygon type of new #LocationBoundary with given information.
@@ -137,7 +137,7 @@ LocationBoundary *location_boundary_new_for_polygon(GList *position_list);
  * @param [in] boundary - a #LocationBoundary.
  * @return None.
  */
-void location_boundary_free (LocationBoundary *boundary);
+void location_boundary_free(LocationBoundary *boundary);
 
 /**
  * @brief	Makes a copy of #LocationBoundary
@@ -148,7 +148,7 @@ void location_boundary_free (LocationBoundary *boundary);
  * @return a new #LocationBoundary
  * @retval NULL if error occured
  */
-LocationBoundary *location_boundary_copy (const LocationBoundary* boundary);
+LocationBoundary *location_boundary_copy(const LocationBoundary *boundary);
 
 /**
  * @brief
@@ -294,18 +294,18 @@ void location_test_boundary_if_inside(LocationObject *loc, LocationBoundary *bou
  * @endcode
 
  */
-gboolean location_boundary_if_inside (LocationBoundary *boundary, LocationPosition *position);
+gboolean location_boundary_if_inside(LocationBoundary *boundary, LocationPosition *position);
 
 /**
  * @brief Get bounding box of #LocationBoundary
  */
-LocationBoundary *location_boundary_get_bounding_box (LocationBoundary *boundary);
+LocationBoundary *location_boundary_get_bounding_box(LocationBoundary *boundary);
 
 
 /**
  * @brief Get the center position of #LocationBoundary
  */
-LocationPosition * location_boundary_get_center_position (LocationBoundary *boundary);
+LocationPosition *location_boundary_get_center_position(LocationBoundary *boundary);
 
 /**
  * @} @}

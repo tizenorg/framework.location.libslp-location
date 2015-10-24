@@ -63,7 +63,7 @@ G_BEGIN_DECLS
  * Please refer #LocationError for more information.
  * @see None.
  */
-int location_init (void);
+int location_init(void);
 
 /**
  * @brief
@@ -79,7 +79,7 @@ int location_init (void);
  * @retval NULL			if error occured
  * @see location_free
  */
-LocationObject *location_new (LocationMethod method);
+LocationObject *location_new(LocationMethod method);
 
 /**
  * @brief
@@ -114,7 +114,7 @@ int main (int argc, char *argv[])
 }
  * @endcode
  */
-int location_free (LocationObject *obj);
+int location_free(LocationObject *obj);
 
 /**
  * @brief
@@ -249,7 +249,7 @@ int main (int argc, char *argv[])
 }
  * @endcode
  */
-int location_start (LocationObject *obj);
+int location_start(LocationObject *obj);
 
 /**
  * @brief
@@ -292,7 +292,7 @@ int main (int argc, char *argv[])
 }
  * @endcode
  */
-int location_stop (LocationObject *obj);
+int location_stop(LocationObject *obj);
 
 int location_request_single_location(LocationObject *obj, int timeout);
 
@@ -332,7 +332,6 @@ gboolean location_is_supported_method(LocationMethod method);
 int location_is_enabled_method(LocationMethod method, int *is_enabled);
 
 int location_enable_method(const LocationMethod method, const int enable);
-
 
 
 /**
@@ -403,7 +402,7 @@ int main (int argc, char *argv[])
 }
  * @endcode
  */
-int location_get_position (LocationObject *obj, LocationPosition **position, LocationAccuracy **accuracy);
+int location_get_position(LocationObject *obj, LocationPosition **position, LocationAccuracy **accuracy);
 
 /**
  * @brief
@@ -473,7 +472,7 @@ int main (int argc, char *argv[])
 }
  * @endcode
  */
-int location_get_position_ext (LocationObject *obj, LocationPosition **position, LocationVelocity **velocity, LocationAccuracy **accuracy);
+int location_get_position_ext(LocationObject *obj, LocationPosition **position, LocationVelocity **velocity, LocationAccuracy **accuracy);
 
 /**
  * @brief
@@ -523,7 +522,7 @@ int main (int argc, char *argv[])
 }
  * @endcode
  */
-int location_get_last_position (LocationObject *obj, LocationPosition **position, LocationAccuracy **accuracy);
+int location_get_last_position(LocationObject *obj, LocationPosition **position, LocationAccuracy **accuracy);
 
 /**
  * @brief
@@ -575,7 +574,7 @@ int main (int argc, char *argv[])
 }
  * @endcode
  */
-int location_get_last_position_ext (LocationObject *obj, LocationPosition **position, LocationVelocity **velocity, LocationAccuracy **accuracy);
+int location_get_last_position_ext(LocationObject *obj, LocationPosition **position, LocationVelocity **velocity, LocationAccuracy **accuracy);
 /**
  * @brief
  * Get last satellite information.
@@ -629,14 +628,14 @@ int main (int argc, char *argv[])
 }
  * @endcode
  */
-int location_get_satellite (LocationObject *obj, LocationSatellite **satellite);
+int location_get_satellite(LocationObject *obj, LocationSatellite **satellite);
 
 
-int location_start_batch (LocationObject *obj);
+int location_start_batch(LocationObject *obj);
 
-int location_stop_batch (LocationObject *obj);
+int location_stop_batch(LocationObject *obj);
 
-int location_get_batch (LocationObject *obj, LocationBatch **batch);
+int location_get_batch(LocationObject *obj, LocationBatch **batch);
 
 
 /**
@@ -693,7 +692,7 @@ int main (int argc, char *argv[])
 }
  * @endcode
  */
-int location_get_last_satellite (LocationObject *obj, LocationSatellite **satellite);
+int location_get_last_satellite(LocationObject *obj, LocationSatellite **satellite);
 
 /**
  * @brief
@@ -764,7 +763,7 @@ int main (int argc, char *argv[])
 
  * @endcode
  */
-int location_get_velocity (LocationObject *obj, LocationVelocity **velocity, LocationAccuracy **accuracy);
+int location_get_velocity(LocationObject *obj, LocationVelocity **velocity, LocationAccuracy **accuracy);
 
 /**
  * @brief
@@ -819,7 +818,7 @@ int main (int argc, char *argv[])
 }
  * @endcode
  */
-int location_get_last_velocity (LocationObject *obj, LocationVelocity **velocity, LocationAccuracy **accuracy);
+int location_get_last_velocity(LocationObject *obj, LocationVelocity **velocity, LocationAccuracy **accuracy);
 
 /**
  * @brief
@@ -834,7 +833,7 @@ int location_get_last_velocity (LocationObject *obj, LocationVelocity **velocity
  *
  * Please refer #LocationError for more information.
  */
-int location_get_accessibility_state (LocationAccessState *state);
+int location_get_accessibility_state(LocationAccessState *state);
 
 /**
  * @brief
@@ -871,8 +870,9 @@ int location_set_option(LocationObject *obj, const char *option);
 
 int location_add_setting_notify(LocationMethod method, LocationSettingCb callback, void *user_data);
 
-int location_ignore_setting_notify(LocationMethod method, LocationSettingCb callback );
+int location_ignore_setting_notify(LocationMethod method, LocationSettingCb callback);
 
+int location_get_nmea(LocationObject *obj, char **nmea_data);
 
 
 /**

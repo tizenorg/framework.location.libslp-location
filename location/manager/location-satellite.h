@@ -26,7 +26,7 @@
 
 G_BEGIN_DECLS
 
-GType location_satellite_get_type (void);
+GType location_satellite_get_type(void);
 #define LOCATION_TYPE_SATELLITE (location_satellite_get_type ())
 
 /**
@@ -46,22 +46,21 @@ GType location_satellite_get_type (void);
  * @brief This represents one satellite information in view.
  */
 typedef struct {
-	guint prn;			///< The PRNs(Pseudo-Random Noise code) of a satellite.
-	gboolean used;		///< TRUE if currently used satellite.
-	guint elevation;	///< The elevation of a satellite.
-	guint azimuth;		///< The degree from true north 000 to 359 of a satellite.
-	gint snr;			///< The signal-to-noise ratio, dB of a satellite.
+	guint prn;			/*/< The PRNs(Pseudo-Random Noise code) of a satellite. */
+	gboolean used;		/*/< TRUE if currently used satellite. */
+	guint elevation;	/*/< The elevation of a satellite. */
+	guint azimuth;		/*/< The degree from true north 000 to 359 of a satellite. */
+	gint snr;			/*/< The signal-to-noise ratio, dB of a satellite. */
 } LocationSatelliteDetail;
 
 /**
  * @brief This represents position information such as number of satellites in used or in view.
  */
-struct _LocationSatellite
-{
-	guint timestamp;							///< Time stamp.
-	guint num_of_sat_inview;					///< The number of satellites in view.
-	guint num_of_sat_used;						///< The number of satellites in used.
-	LocationSatelliteDetail* sat_inview;		///< The information of satellites in view .
+struct _LocationSatellite {
+	guint timestamp;							/*/< Time stamp. */
+	guint num_of_sat_inview;					/*/< The number of satellites in view. */
+	guint num_of_sat_used;						/*/< The number of satellites in used. */
+	LocationSatelliteDetail *sat_inview;		/*/< The information of satellites in view . */
 };
 
 /**
@@ -73,7 +72,7 @@ struct _LocationSatellite
  * @return a new #LocationSatellite
  * @retval NULL if error occured
  */
-LocationSatellite *location_satellite_new (int num_of_sat_inview);
+LocationSatellite *location_satellite_new(int num_of_sat_inview);
 
 /**
  * @brief	Free a #LocationSatellite.
@@ -83,7 +82,7 @@ LocationSatellite *location_satellite_new (int num_of_sat_inview);
  * @param [in] satellite - a #LocationSatellite.
  * @return None.
  */
-void location_satellite_free (LocationSatellite *satellite);
+void location_satellite_free(LocationSatellite *satellite);
 
 /**
  * @brief	Makes a copy of #LocationSatellite
@@ -94,7 +93,7 @@ void location_satellite_free (LocationSatellite *satellite);
  * @return a new #LocationSatellite
  * @retval NULL if error occured
  */
-LocationSatellite *location_satellite_copy (const LocationSatellite *satellite);
+LocationSatellite *location_satellite_copy(const LocationSatellite *satellite);
 
 /**
  * @brief	Get elements of #LocationSatelliteDetail with given index in #LocationSatellite.
@@ -113,7 +112,7 @@ LocationSatellite *location_satellite_copy (const LocationSatellite *satellite);
  * TRUE - if success\n
  * FALSE - if error occured\n
  */
-gboolean location_satellite_get_satellite_details (const LocationSatellite *satellite, guint index, guint *prn, gboolean *used, guint *elevation, guint *azimuth, gint *snr);
+gboolean location_satellite_get_satellite_details(const LocationSatellite *satellite, guint index, guint *prn, gboolean *used, guint *elevation, guint *azimuth, gint *snr);
 
 /**
  * @brief	Set elements of #LocationSatelliteDetail with given index in #LocationSatellite.
@@ -132,7 +131,7 @@ gboolean location_satellite_get_satellite_details (const LocationSatellite *sate
  * TRUE - if success\n
  * FALSE - if error occured\n
  */
-gboolean location_satellite_set_satellite_details( LocationSatellite *satellite, guint index, guint prn,	gboolean used, guint elevation, guint azimuth, gint snr);
+gboolean location_satellite_set_satellite_details(LocationSatellite *satellite, guint index, guint prn,	gboolean used, guint elevation, guint azimuth, gint snr);
 
 /**
  * @} @}

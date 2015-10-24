@@ -47,23 +47,22 @@ GType location_accuracy_get_type(void);
  * @brief This represents the approximate accuracy level of given information.
  */
 typedef enum {
-	LOCATION_ACCURACY_LEVEL_NONE = 0,	///< Invalid data.
-	LOCATION_ACCURACY_LEVEL_COUNTRY,	///< Country accuracy level->
-	LOCATION_ACCURACY_LEVEL_REGION,		///< Regional accuracy level->
-	LOCATION_ACCURACY_LEVEL_LOCALITY,	///< Local accuracy level->
-	LOCATION_ACCURACY_LEVEL_POSTALCODE,	///< Postal accuracy level->
-	LOCATION_ACCURACY_LEVEL_STREET,		///< Street accuracy level->
-	LOCATION_ACCURACY_LEVEL_DETAILED,	///< Detailed accuracy level->
+    LOCATION_ACCURACY_LEVEL_NONE = 0,	/*/< Invalid data. */
+    LOCATION_ACCURACY_LEVEL_COUNTRY,	/*/< Country accuracy level-> */
+    LOCATION_ACCURACY_LEVEL_REGION,		/*/< Regional accuracy level-> */
+    LOCATION_ACCURACY_LEVEL_LOCALITY,	/*/< Local accuracy level-> */
+    LOCATION_ACCURACY_LEVEL_POSTALCODE,	/*/< Postal accuracy level-> */
+    LOCATION_ACCURACY_LEVEL_STREET,		/*/< Street accuracy level-> */
+    LOCATION_ACCURACY_LEVEL_DETAILED,	/*/< Detailed accuracy level-> */
 } LocationAccuracyLevel;
 
 /**
  * @brief This represents location accuracy information such as accuracy level, horizontal and vertical accuracy.
  */
-struct _LocationAccuracy
-{
-	LocationAccuracyLevel level;		///< The accuracy level of the location information.
-	gdouble horizontal_accuracy;		///< The horizontal position uncertainty of the location in meters.
-	gdouble vertical_accuracy;			///< The vertical position uncertainty of the location in meters.
+struct _LocationAccuracy {
+	LocationAccuracyLevel level;		/*/< The accuracy level of the location information. */
+	gdouble horizontal_accuracy;		/*/< The horizontal position uncertainty of the location in meters. */
+	gdouble vertical_accuracy;			/*/< The vertical position uncertainty of the location in meters. */
 };
 
 /**
@@ -77,7 +76,7 @@ struct _LocationAccuracy
  * @return a new #LocationAccuracy
  * @retval NULL if error occured
  */
-LocationAccuracy *location_accuracy_new (LocationAccuracyLevel level, gdouble horizontal_accuracy, gdouble vertical_accuracy);
+LocationAccuracy *location_accuracy_new(LocationAccuracyLevel level, gdouble horizontal_accuracy, gdouble vertical_accuracy);
 
 /**
  * @brief	Free a #LocationAccuracy.
@@ -87,7 +86,7 @@ LocationAccuracy *location_accuracy_new (LocationAccuracyLevel level, gdouble ho
  * @param [in] accuracy - a #LocationAccuracy.
  * @return None.
  */
-void location_accuracy_free (LocationAccuracy *accuracy);
+void location_accuracy_free(LocationAccuracy *accuracy);
 
 /**
  * @brief	Compare for two accuracys.
@@ -102,7 +101,7 @@ void location_accuracy_free (LocationAccuracy *accuracy);
  * positive value - if accuracy of accuracy1 is better than accuracy of accuracy2\n
  * negative value - if accuracy of accuracy1 is worse than accuracy of accuracy2
  */
-int location_accuracy_compare (const LocationAccuracy *accuracy1, const LocationAccuracy *accuracy2);
+int location_accuracy_compare(const LocationAccuracy *accuracy1, const LocationAccuracy *accuracy2);
 
 /**
  * @brief	Compare for two accuracys' level.
@@ -128,7 +127,7 @@ int location_accuracy_level_compare(const LocationAccuracy *accuracy1, const Loc
  * @return a new #LocationAccuracy
  * @retval NULL if error occured
  */
-LocationAccuracy *location_accuracy_copy (const LocationAccuracy *accuracy);
+LocationAccuracy *location_accuracy_copy(const LocationAccuracy *accuracy);
 
 /**
  * @} @}
